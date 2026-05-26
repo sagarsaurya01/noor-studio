@@ -1,0 +1,36 @@
+import { NextRequest, NextResponse } from 'next/server'
+import OpenAI from 'openai'
+import fs from 'fs'
+import path from 'path'
+import os from 'os'
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+export async function POST(req: NextRequest) {
+  try {
+    const formData = await req.formData()
+    const audio = formData.get('audio') as File | null
+
+    if (!audio) return NextResponse.json({ error: 'No audio provided' }, { status: 400 })
+
+    const arrayBuffer = await audio.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    // Save to temp file — OpenAI SDK needs a readable stream with a filename
+    const audioPath = path.join(os.tmpdir(), `noor_voice_${Date.now()}.webm`)
+    fs.writeFileSync(audioPath, buffer)
+
+    const fileStream = fs.createReadStream(audioPath)
+    const transcription = await openai.audio.transcriptions.create({
+      file: fileStream,
+      model: 'whisper-1',
+    })
+
+    try { fs.unlinkSync(audioPath) } catch {}
+
+    return NextResponse.json({ transcript: transcription.text })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Voice transcription failed'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}

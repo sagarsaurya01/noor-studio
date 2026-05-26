@@ -1,0 +1,4 @@
+Starting Noor Studio... 
+Working dir: C:\Users\sagar\Downloads\noor-studio 
+v22.14.0
+10.9.2
