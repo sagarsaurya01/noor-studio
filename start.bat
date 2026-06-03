@@ -1,6 +1,6 @@
 @echo off
-set ANTHROPIC_API_KEY=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
-set OPENAI_API_KEY=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
+set ANTHROPIC_API_KEY=YOUR_KEY_HERE
+set OPENAI_API_KEY=YOUR_KEY_HERE
 cd /d "%~dp0"
 
 echo ==========================================

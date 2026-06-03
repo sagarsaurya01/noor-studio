@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
       scripts: content.scripts,
       storyboard: storyboard.scenes,
       selected_script: 0,
-      status: 'draft',
+      status: 'completed',
       created_at: new Date().toISOString(),
       thumbnail_url,
       platform: platform || defaultPlatform,

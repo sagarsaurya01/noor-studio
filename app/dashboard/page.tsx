@@ -70,7 +70,16 @@ export default function DashboardPage() {
   useEffect(() => {
     fetch('/api/projects')
       .then(r => r.json())
-      .then(data => { setProjects(data); setLoading(false) })
+      .then((data: Project[]) => {
+        // Auto-mark as completed if status isn't already set correctly
+        // (projects created before this fix will show as 'draft' wrongly)
+        const fixed = data.map((p: Project) => ({
+          ...p,
+          status: p.status === 'draft' ? 'completed' : p.status
+        }))
+        setProjects(fixed)
+        setLoading(false)
+      })
   }, [])
 
   async function handleDelete(id: string) {
