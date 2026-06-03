@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 
@@ -20,32 +20,18 @@ type Project = {
   platform?: string
 }
 
-const CARD_GRADIENTS = [
-  'from-violet-600 via-purple-700 to-indigo-900',
-  'from-blue-600 via-cyan-700 to-blue-900',
-  'from-pink-600 via-rose-700 to-pink-900',
-  'from-emerald-600 via-teal-700 to-emerald-900',
-  'from-amber-600 via-orange-700 to-amber-900',
-  'from-indigo-600 via-blue-700 to-indigo-900',
-  'from-fuchsia-600 via-purple-700 to-fuchsia-900',
-  'from-teal-600 via-emerald-700 to-teal-900',
-]
-
 function getYouTubeThumbnail(url: string): string | null {
   const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([^&\n?#]+)/)
   return match ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg` : null
 }
 
-function CardThumbnail({ project, gradient }: { project: Project; gradient: string }) {
+function CardThumbnail({ project }: { project: Project }) {
   const isVideo = project.input_type === 'video'
   const ytThumb = isVideo && project.video_url ? getYouTubeThumbnail(project.video_url) : null
-  const titleKeyword = project.title.split(' ').slice(0, 3).join(' ')
-  const generatedUnsplash = `https://source.unsplash.com/800x450/?${encodeURIComponent(titleKeyword)}`
   const chain: string[] = []
   if (isVideo) chain.push(`/extracted/${project.id}/frames/frame_0001.jpg`)
   if (ytThumb) chain.push(ytThumb)
   if (project.thumbnail_url) chain.push(project.thumbnail_url)
-  else chain.push(generatedUnsplash)
 
   const [idx, setIdx] = useState(0)
   const [allFailed, setAllFailed] = useState(chain.length === 0)
@@ -56,14 +42,21 @@ function CardThumbnail({ project, gradient }: { project: Project; gradient: stri
   }
 
   return (
-    <div className="relative h-[160px] overflow-hidden bg-zinc-900 rounded-t-xl">
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
+    <div className="relative h-[140px] overflow-hidden" style={{ background: '#0a0a0a' }}>
+      {/* Gold gradient fallback */}
+      <div className="absolute inset-0" style={{
+        background: 'linear-gradient(135deg, #1a1200 0%, #0e0a00 50%, #000 100%)'
+      }} />
+      <div className="absolute inset-0 flex items-center justify-center opacity-10">
+        <span style={{ fontSize: 80, fontWeight: 900, color: '#f5a623', letterSpacing: -4 }}>N</span>
+      </div>
       {!allFailed && chain[idx] && (
         // eslint-disable-next-line @next/next/no-img-element
         <img key={chain[idx]} src={chain[idx]} alt="" onError={handleError}
-          className="absolute inset-0 w-full h-full object-cover" />
+          className="absolute inset-0 w-full h-full object-cover opacity-70" />
       )}
-      <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/90 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-16"
+        style={{ background: 'linear-gradient(to top, #0e0e0e, transparent)' }} />
     </div>
   )
 }
@@ -99,28 +92,32 @@ export default function DashboardPage() {
   const weekCount = projects.filter(p => new Date(p.created_at) > new Date(Date.now() - 7 * 86400000)).length
 
   return (
-    <div className="flex h-screen bg-black text-white overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ background: '#000', color: '#f0ede8' }}>
 
       {/* ── SIDEBAR ── */}
-      <aside className="w-[240px] shrink-0 border-r border-white/[0.06] bg-[#080808] flex flex-col h-full">
+      <aside className="w-[240px] shrink-0 flex flex-col h-full"
+        style={{ background: '#080808', borderRight: '1px solid rgba(245,166,35,0.1)' }}>
 
         {/* Logo */}
-        <div className="px-5 h-16 flex items-center border-b border-white/[0.05]">
+        <div className="px-5 h-16 flex items-center" style={{ borderBottom: '1px solid rgba(245,166,35,0.08)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center text-sm font-black shadow-lg shadow-purple-700/30">N</div>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black"
+              style={{ background: 'linear-gradient(135deg, #f5a623, #d4830f)', color: '#000', boxShadow: '0 4px 16px rgba(245,166,35,0.3)' }}>
+              N
+            </div>
             <div>
-              <p className="font-black text-sm tracking-tight text-white">NOOR STUDIO</p>
-              <p className="text-[10px] text-zinc-600">AI Content Engine</p>
+              <p className="font-black text-sm tracking-tight" style={{ color: '#f0ede8' }}>NOOR STUDIO</p>
+              <p className="text-[10px]" style={{ color: '#6b6560' }}>AI Content Engine</p>
             </div>
           </div>
         </div>
 
         {/* Nav */}
         <nav className="px-3 pt-5 space-y-1">
-          <p className="text-[9px] font-bold text-zinc-700 uppercase tracking-[0.18em] px-3 mb-2">Menu</p>
+          <p className="text-[9px] font-bold uppercase tracking-[0.18em] px-3 mb-2" style={{ color: '#3d3830' }}>Menu</p>
 
-          <Link href="/dashboard"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-purple-600/15 border border-purple-500/20 text-sm font-semibold text-purple-300">
+          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            style={{ background: 'rgba(245,166,35,0.1)', border: '1px solid rgba(245,166,35,0.2)', color: '#f5a623' }}>
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
               <rect x="1" y="1" width="5.5" height="5.5" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
               <rect x="8.5" y="1" width="5.5" height="5.5" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
@@ -130,8 +127,8 @@ export default function DashboardPage() {
             Dashboard
           </Link>
 
-          <Link href="/new"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04] transition-all">
+          <Link href="/new" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-white/[0.04]"
+            style={{ color: '#6b6560' }}>
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
               <path d="M7.5 1v13M1 7.5h13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
@@ -139,55 +136,57 @@ export default function DashboardPage() {
           </Link>
         </nav>
 
-        <Separator className="mx-4 my-5 bg-white/[0.05] w-auto" />
+        <Separator className="mx-4 my-5 w-auto" style={{ background: 'rgba(245,166,35,0.08)' }} />
 
         {/* Stats */}
         <div className="px-3 space-y-1">
-          <p className="text-[9px] font-bold text-zinc-700 uppercase tracking-[0.18em] px-3 mb-3">Overview</p>
-
+          <p className="text-[9px] font-bold uppercase tracking-[0.18em] px-3 mb-3" style={{ color: '#3d3830' }}>Overview</p>
           {[
-            { label: 'Total Projects', value: loading ? '—' : totalCount, color: 'text-white', icon: '📁' },
-            { label: 'Completed', value: loading ? '—' : completedCount, color: 'text-emerald-400', icon: '✅' },
-            { label: 'This Week', value: loading ? '—' : weekCount, color: 'text-orange-400', icon: '🗓' },
+            { label: 'Total Projects', value: loading ? '—' : totalCount, color: '#f0ede8', icon: '🎬' },
+            { label: 'Completed', value: loading ? '—' : completedCount, color: '#4ade80', icon: '✓' },
+            { label: 'This Week', value: loading ? '—' : weekCount, color: '#f5a623', icon: '◆' },
           ].map(s => (
-            <div key={s.label} className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors">
+            <div key={s.label} className="flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors hover:bg-white/[0.03]">
               <div className="flex items-center gap-2">
-                <span className="text-sm">{s.icon}</span>
-                <span className="text-xs text-zinc-500">{s.label}</span>
+                <span className="text-xs" style={{ color: s.color }}>{s.icon}</span>
+                <span className="text-xs" style={{ color: '#6b6560' }}>{s.label}</span>
               </div>
-              <span className={`text-sm font-black tabular-nums ${s.color}`}>{s.value}</span>
+              <span className="text-sm font-black tabular-nums" style={{ color: s.color }}>{s.value}</span>
             </div>
           ))}
         </div>
 
         <div className="flex-1" />
 
-        <div className="px-5 py-4 border-t border-white/[0.05]">
-          <Badge variant="outline" className="border-purple-500/30 text-purple-400 bg-purple-500/10 text-[10px]">
+        <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(245,166,35,0.08)' }}>
+          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full"
+            style={{ background: 'rgba(245,166,35,0.1)', border: '1px solid rgba(245,166,35,0.2)', color: '#f5a623' }}>
             Beta v0.1
-          </Badge>
+          </span>
         </div>
       </aside>
 
       {/* ── MAIN ── */}
       <main className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
 
-        {/* Glow */}
+        {/* Gold glow */}
         <div className="pointer-events-none fixed overflow-hidden" style={{ left: 240, right: 0, top: 0, bottom: 0, zIndex: 0 }}>
-          <div className="absolute -top-48 left-1/3 w-[600px] h-[600px] bg-purple-700/15 rounded-full blur-[140px]" />
-          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-violet-800/10 rounded-full blur-[110px]" />
+          <div className="absolute -top-48 left-1/3 w-[600px] h-[600px] rounded-full blur-[160px]"
+            style={{ background: 'rgba(245,166,35,0.06)' }} />
+          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full blur-[120px]"
+            style={{ background: 'rgba(245,166,35,0.04)' }} />
         </div>
 
         {/* Top bar */}
-        <div className="relative z-10 shrink-0 border-b border-white/[0.06] backdrop-blur-xl bg-black/70 px-8 h-16 flex items-center justify-between">
+        <div className="relative z-10 shrink-0 px-8 h-16 flex items-center justify-between backdrop-blur-xl"
+          style={{ borderBottom: '1px solid rgba(245,166,35,0.1)', background: 'rgba(0,0,0,0.8)' }}>
           <div>
-            <h1 className="text-base font-bold text-white">Projects</h1>
-            <p className="text-[11px] text-zinc-500 mt-0.5">
+            <h1 className="text-base font-bold" style={{ color: '#f0ede8' }}>Projects</h1>
+            <p className="text-[11px] mt-0.5" style={{ color: '#6b6560' }}>
               {loading ? 'Loading...' : `${totalCount} project${totalCount !== 1 ? 's' : ''} · ${completedCount} completed`}
             </p>
           </div>
-          <Link href="/new"
-            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-purple-700/20">
+          <Link href="/new" className="inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-xl transition-all btn-primary">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
             </svg>
@@ -202,17 +201,16 @@ export default function DashboardPage() {
           {!loading && totalCount > 0 && (
             <div className="grid grid-cols-3 gap-4 mb-8">
               {[
-                { label: 'Total Projects', value: totalCount, sub: 'all time', color: 'from-purple-600/20 to-violet-600/10', border: 'border-purple-500/20', text: 'text-purple-300' },
-                { label: 'Completed', value: completedCount, sub: 'fully done', color: 'from-emerald-600/20 to-teal-600/10', border: 'border-emerald-500/20', text: 'text-emerald-300' },
-                { label: 'This Week', value: weekCount, sub: 'last 7 days', color: 'from-orange-600/20 to-amber-600/10', border: 'border-orange-500/20', text: 'text-orange-300' },
+                { label: 'Total Projects', value: totalCount, sub: 'all time', bg: 'rgba(245,166,35,0.08)', border: 'rgba(245,166,35,0.2)', val: '#f5a623' },
+                { label: 'Completed', value: completedCount, sub: 'fully done', bg: 'rgba(74,222,128,0.06)', border: 'rgba(74,222,128,0.15)', val: '#4ade80' },
+                { label: 'This Week', value: weekCount, sub: 'last 7 days', bg: 'rgba(251,191,36,0.06)', border: 'rgba(251,191,36,0.15)', val: '#fbbf24' },
               ].map(s => (
-                <Card key={s.label} className={`bg-gradient-to-br ${s.color} border ${s.border} rounded-2xl`}>
-                  <CardContent className="p-5">
-                    <p className="text-3xl font-black text-white">{s.value}</p>
-                    <p className={`text-sm font-semibold mt-1 ${s.text}`}>{s.label}</p>
-                    <p className="text-[11px] text-zinc-600 mt-0.5">{s.sub}</p>
-                  </CardContent>
-                </Card>
+                <div key={s.label} className="rounded-2xl p-5"
+                  style={{ background: s.bg, border: `1px solid ${s.border}` }}>
+                  <p className="text-3xl font-black" style={{ color: '#f0ede8' }}>{s.value}</p>
+                  <p className="text-sm font-semibold mt-1" style={{ color: s.val }}>{s.label}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: '#4a453f' }}>{s.sub}</p>
+                </div>
               ))}
             </div>
           )}
@@ -220,23 +218,18 @@ export default function DashboardPage() {
           {/* Loading skeletons */}
           {loading && (
             <div>
-              <div className="flex gap-4 mb-8">
+              <div className="grid grid-cols-3 gap-4 mb-8">
                 {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-24 flex-1 rounded-2xl bg-white/[0.05]" />
+                  <Skeleton key={i} className="h-24 rounded-2xl" style={{ background: 'rgba(245,166,35,0.05)' }} />
                 ))}
               </div>
-              <Skeleton className="h-5 w-32 bg-white/[0.05] mb-6" />
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="rounded-xl border border-white/[0.07] overflow-hidden bg-white/[0.02]">
-                    <Skeleton className="h-[160px] w-full bg-white/[0.05]" />
+                  <div key={i} className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(245,166,35,0.08)', background: '#0e0e0e' }}>
+                    <Skeleton className="h-[140px] w-full" style={{ background: 'rgba(245,166,35,0.05)' }} />
                     <div className="p-4 space-y-2.5">
-                      <div className="flex gap-2">
-                        <Skeleton className="h-5 w-16 rounded-full bg-white/[0.05]" />
-                        <Skeleton className="h-5 w-20 rounded-full bg-white/[0.04]" />
-                      </div>
-                      <Skeleton className="h-4 w-full bg-white/[0.05]" />
-                      <Skeleton className="h-3 w-2/3 bg-white/[0.04]" />
+                      <Skeleton className="h-4 w-full" style={{ background: 'rgba(245,166,35,0.05)' }} />
+                      <Skeleton className="h-3 w-2/3" style={{ background: 'rgba(245,166,35,0.04)' }} />
                     </div>
                   </div>
                 ))}
@@ -247,22 +240,16 @@ export default function DashboardPage() {
           {/* Empty state */}
           {!loading && projects.length === 0 && (
             <div className="flex flex-col items-center justify-center h-[60vh] text-center">
-              <div className="w-20 h-20 rounded-3xl bg-purple-600/15 border border-purple-500/20 flex items-center justify-center mb-6">
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                  <path d="M16 4C9.37 4 4 9.37 4 16s5.37 12 12 12 12-5.37 12-12S22.63 4 16 4z" stroke="#a855f7" strokeWidth="1.5"/>
-                  <path d="M16 11v5M16 19v1" stroke="#a855f7" strokeWidth="1.8" strokeLinecap="round"/>
-                </svg>
+              <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6"
+                style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.2)' }}>
+                <span style={{ fontSize: 32, color: '#f5a623' }}>🎬</span>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">No projects yet</h2>
-              <p className="text-zinc-500 text-sm mb-8 max-w-xs leading-relaxed">
+              <h2 className="text-2xl font-bold mb-2" style={{ color: '#f0ede8' }}>No projects yet</h2>
+              <p className="text-sm mb-8 max-w-xs leading-relaxed" style={{ color: '#6b6560' }}>
                 Create your first project — give Noor a topic or a video link and get a full content package.
               </p>
-              <Link href="/new"
-                className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-bold px-8 py-3.5 rounded-2xl text-sm transition-all shadow-lg shadow-purple-700/20">
-                Create First Project
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M2 7h10M7.5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+              <Link href="/new" className="inline-flex items-center gap-2 font-bold px-8 py-3.5 rounded-2xl text-sm btn-primary">
+                Create First Project →
               </Link>
             </div>
           )}
@@ -270,97 +257,100 @@ export default function DashboardPage() {
           {/* Projects grid */}
           {!loading && projects.length > 0 && (
             <div>
-              <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.16em] mb-5">All Projects</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] mb-5" style={{ color: '#3d3830' }}>All Projects</p>
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 
                 {/* New project card */}
                 <Link href="/new"
-                  className="group rounded-xl border-2 border-dashed border-white/[0.08] hover:border-purple-500/40 hover:bg-purple-500/[0.03] transition-all duration-200 flex flex-col items-center justify-center min-h-[280px] gap-4">
-                  <div className="w-12 h-12 rounded-xl border border-white/[0.10] group-hover:border-purple-500/30 bg-white/[0.03] flex items-center justify-center transition-all">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M10 2v16M2 10h16" stroke="#52525b" strokeWidth="1.6" strokeLinecap="round"
-                        className="group-hover:stroke-purple-400 transition-colors"/>
+                  className="group rounded-xl flex flex-col items-center justify-center min-h-[260px] gap-4 transition-all duration-200"
+                  style={{ border: '2px dashed rgba(245,166,35,0.15)' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,166,35,0.4)'; (e.currentTarget as HTMLElement).style.background = 'rgba(245,166,35,0.03)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,166,35,0.15)'; (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-all"
+                    style={{ border: '1px solid rgba(245,166,35,0.15)', background: 'rgba(245,166,35,0.04)' }}>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ color: '#4a453f' }}>
+                      <path d="M10 2v16M2 10h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
                     </svg>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-zinc-500 group-hover:text-zinc-300 transition-colors">New Project</p>
-                    <p className="text-[11px] text-zinc-700 mt-0.5">Topic or video link</p>
+                    <p className="text-sm font-semibold" style={{ color: '#6b6560' }}>New Project</p>
+                    <p className="text-[11px] mt-0.5" style={{ color: '#3d3830' }}>Topic or video link</p>
                   </div>
                 </Link>
 
                 {/* Project cards */}
-                {projects.map((p, i) => {
-                  const gradient = CARD_GRADIENTS[i % CARD_GRADIENTS.length]
+                {projects.map((p) => {
                   const isComplete = p.status === 'completed'
                   const dateStr = new Date(p.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
                   const isBeingDeleted = deleting === p.id
 
                   return (
-                    <Card key={p.id}
-                      className="group rounded-xl border border-white/[0.08] hover:border-white/[0.16] bg-[#0a0a0a] transition-all duration-200 overflow-hidden cursor-pointer p-0"
+                    <div key={p.id}
+                      className="group rounded-xl overflow-hidden cursor-pointer transition-all duration-200 relative card-hover"
+                      style={{ border: '1px solid rgba(245,166,35,0.1)', background: '#0e0e0e' }}
                       onClick={() => window.location.href = `/project/${p.id}`}>
 
-                      {/* Thumbnail */}
-                      <div className="relative">
-                        <CardThumbnail project={p} gradient={gradient} />
+                      {/* Gold top line */}
+                      <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(245,166,35,0.4), transparent)' }} />
 
-                        {/* Status badge */}
-                        <div className="absolute top-3 right-3 z-10">
-                          <Badge className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 ${
-                            isComplete
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                              : 'bg-zinc-800/80 text-zinc-400 border border-white/10'
-                          }`}>
-                            {isComplete ? '✓ Done' : p.status}
-                          </Badge>
-                        </div>
+                      <CardThumbnail project={p} />
 
-                        {/* Input type badge */}
-                        <div className="absolute top-3 left-3 z-10">
-                          <Badge className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-black/60 text-zinc-400 border border-white/10 backdrop-blur-sm">
-                            {p.input_type === 'topic' ? '💡 Topic' : p.input_type === 'video' ? '🎥 Video' : p.input_type === 'image' ? '🖼 Image' : '📄 PDF'}
-                          </Badge>
-                        </div>
-
-                        {/* Delete button */}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setConfirmDelete(p.id) }}
-                          disabled={isBeingDeleted}
-                          className="absolute bottom-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity w-7 h-7 rounded-lg bg-black/70 backdrop-blur-sm border border-white/10 text-zinc-500 hover:text-red-400 hover:border-red-500/30 flex items-center justify-center"
-                        >
-                          {isBeingDeleted
-                            ? <span className="w-3 h-3 border border-red-400/70 border-t-transparent rounded-full animate-spin" />
-                            : <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                <path d="M2 3h8M5 3V2h2v1M4.5 3v6.5h3V3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                          }
-                        </button>
+                      {/* Badges on image */}
+                      <div className="absolute top-4 left-3 flex gap-1.5 z-10">
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-sm"
+                          style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(245,166,35,0.2)', color: '#f5a623' }}>
+                          {p.input_type === 'topic' ? '💡 Topic' : p.input_type === 'video' ? '🎥 Video' : p.input_type === 'image' ? '🖼 Image' : '📄 PDF'}
+                        </span>
                       </div>
 
+                      <div className="absolute top-4 right-3 flex gap-1.5 z-10">
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-sm"
+                          style={{
+                            background: isComplete ? 'rgba(74,222,128,0.15)' : 'rgba(0,0,0,0.7)',
+                            border: isComplete ? '1px solid rgba(74,222,128,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                            color: isComplete ? '#4ade80' : '#6b6560'
+                          }}>
+                          {isComplete ? '✓ Done' : p.status}
+                        </span>
+                      </div>
+
+                      {/* Delete */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setConfirmDelete(p.id) }}
+                        disabled={isBeingDeleted}
+                        className="absolute bottom-[calc(100px)] right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity w-7 h-7 rounded-lg flex items-center justify-center"
+                        style={{ background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(255,255,255,0.1)', color: '#6b6560' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#f87171'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(248,113,113,0.3)' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#6b6560'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)' }}>
+                        {isBeingDeleted
+                          ? <span className="w-3 h-3 border border-red-400/70 border-t-transparent rounded-full animate-spin" />
+                          : <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M5 3V2h2v1M4.5 3v6.5h3V3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        }
+                      </button>
+
                       {/* Card body */}
-                      <CardContent className="p-4">
-                        <h3 className="font-bold text-white text-sm leading-snug line-clamp-2 group-hover:text-purple-200 transition-colors mb-2">
+                      <div className="p-4">
+                        <h3 className="font-bold text-sm leading-snug line-clamp-2 mb-2 transition-colors"
+                          style={{ color: '#f0ede8' }}>
                           {p.title}
                         </h3>
-                        <div className="flex items-center gap-2 text-[11px] text-zinc-600">
+                        <div className="flex items-center gap-2 text-[11px] mb-3" style={{ color: '#4a453f' }}>
                           <span>{dateStr}</span>
                           {p.platform && (
                             <>
                               <span>·</span>
-                              <span className="text-purple-500 truncate max-w-[90px]">{p.platform}</span>
+                              <span style={{ color: '#f5a623' }} className="truncate max-w-[90px]">{p.platform}</span>
                             </>
                           )}
                         </div>
-
-                        {/* View link */}
-                        <div className="mt-3 pt-3 border-t border-white/[0.05] flex items-center justify-between">
-                          <span className="text-[11px] text-zinc-700">Click to open</span>
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-zinc-700 group-hover:text-purple-400 transition-colors">
+                        <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid rgba(245,166,35,0.08)' }}>
+                          <span className="text-[11px]" style={{ color: '#3d3830' }}>Open project</span>
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ color: '#3d3830' }}>
                             <path d="M2 7h10M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   )
                 })}
               </div>
@@ -371,22 +361,22 @@ export default function DashboardPage() {
 
       {/* Delete Dialog */}
       <Dialog open={!!confirmDelete} onOpenChange={(open) => !open && setConfirmDelete(null)}>
-        <DialogContent className="bg-zinc-950 border border-white/10 text-white max-w-sm">
+        <DialogContent className="max-w-sm" style={{ background: '#0e0e0e', border: '1px solid rgba(245,166,35,0.15)', color: '#f0ede8' }}>
           <DialogHeader>
-            <DialogTitle className="text-white">Delete Project?</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogTitle style={{ color: '#f0ede8' }}>Delete Project?</DialogTitle>
+            <DialogDescription style={{ color: '#6b6560' }}>
               This will permanently delete this project and all its scripts. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 mt-2">
             <button onClick={() => setConfirmDelete(null)}
-              className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:text-white border border-white/10 hover:border-white/20 transition-all">
+              className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+              style={{ color: '#6b6560', border: '1px solid rgba(245,166,35,0.15)' }}>
               Cancel
             </button>
-            <button
-              onClick={() => confirmDelete && handleDelete(confirmDelete)}
-              disabled={!!deleting}
-              className="px-4 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-500 transition-all disabled:opacity-50">
+            <button onClick={() => confirmDelete && handleDelete(confirmDelete)} disabled={!!deleting}
+              className="px-4 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+              style={{ background: '#dc2626', color: '#fff' }}>
               {deleting ? 'Deleting...' : 'Delete'}
             </button>
           </DialogFooter>
