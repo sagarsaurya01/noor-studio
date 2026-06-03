@@ -5,6 +5,9 @@ import path from 'path'
 import os from 'os'
 import fs from 'fs'
 
+export const dynamic = 'force-dynamic'
+
+
 const execAsync = promisify(exec)
 
 // GET — return already-extracted files for a project (so page can reload them)

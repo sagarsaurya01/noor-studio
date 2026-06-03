@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+export const dynamic = 'force-dynamic'
+
+
 
 export async function POST(req: NextRequest) {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? '' })
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY ?? '' })
   const { title, topic, angle, tone, platform, format_type } = await req.json() as {
     title: string
     topic: string
@@ -61,7 +64,8 @@ Write a single punchy prompt of max 3 sentences. Return ONLY the prompt.`
       size,
     })
 
-    const imageData = image.data[0]
+    const imageData = image.data?.[0]
+    if (!imageData) throw new Error('No image data')
     const image_url = imageData.url ?? `data:image/png;base64,${imageData.b64_json}`
     return NextResponse.json({ image_url, prompt: imagePrompt })
   } catch (err: unknown) {

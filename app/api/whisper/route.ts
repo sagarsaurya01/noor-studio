@@ -4,9 +4,12 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+export const dynamic = 'force-dynamic'
+
+
 
 export async function POST(req: NextRequest) {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? '' })
   try {
     const formData = await req.formData()
     const audio = formData.get('audio') as File | null

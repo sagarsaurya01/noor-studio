@@ -4,12 +4,15 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import * as pdfParseModule from 'pdf-parse'
+
+export const dynamic = 'force-dynamic'
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const pdfParse: (buffer: Buffer) => Promise<{ text: string }> = (pdfParseModule as any).default ?? pdfParseModule
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 export async function POST(req: NextRequest) {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? '' })
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File | null

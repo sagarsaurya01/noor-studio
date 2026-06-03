@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import fs from 'fs'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+export const dynamic = 'force-dynamic'
+
+
 
 export async function POST(req: NextRequest) {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? '' })
   try {
     const { audioPath } = await req.json()
     if (!audioPath) return NextResponse.json({ error: 'No audio path provided' }, { status: 400 })

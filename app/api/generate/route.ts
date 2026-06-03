@@ -3,7 +3,9 @@ import Anthropic from '@anthropic-ai/sdk'
 import { saveProject, updateProject } from '@/lib/local-store'
 import { randomUUID } from 'crypto'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
+export const dynamic = 'force-dynamic'
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY ?? '' })
 
 const PLATFORM_INSTRUCTIONS: Record<string, string> = {
   'Instagram Reels': 'Platform: Instagram Reels. Hook must be ≤15 words — punchy, visual, emotionally immediate. Script length: 30–60 seconds. Prioritise visual storytelling and fast cuts.',
@@ -111,6 +113,7 @@ Return ONLY this JSON:
 }
 
 export async function POST(req: NextRequest) {
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY ?? '' })
   try {
     const body = await req.json()
     const { mode, topic, transcript, videoUrl, platform, tone_override, angle_hint, project_id, format_type, input_type } = body

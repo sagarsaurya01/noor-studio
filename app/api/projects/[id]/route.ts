@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProject, updateProject, deleteProject } from '@/lib/local-store'
 
+export const dynamic = 'force-dynamic'
+
+
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const project = getProject(id)
