@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { toast } from 'sonner'
 
 type Script = { variation: number; hook: string; body: string; cta: string; intro?: string; sections?: Array<{ title: string; content: string }>; outro?: string }
 type Scene = { scene: number; duration: string; visual: string; on_screen_text: string; broll_keyword: string; voiceover: string }
@@ -172,6 +173,7 @@ export default function ProjectPage() {
     }
     await navigator.clipboard.writeText(text)
     setCopiedIdx(i)
+    toast.success('Script copied to clipboard!')
     setTimeout(() => setCopiedIdx(null), 2000)
   }
 
@@ -179,6 +181,7 @@ export default function ProjectPage() {
   async function saveEditedScript() {
     if (!project || editingScript === null) return
     setSaving(true)
+    toast.loading('Saving changes...')
     const res = await fetch(`/api/projects/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -189,6 +192,7 @@ export default function ProjectPage() {
     setDraftScripts(updated.scripts)
     setEditingScript(null)
     setSaving(false)
+    toast.success('Changes saved!')
   }
 
   function cancelEdit() {
