@@ -8,7 +8,7 @@ type Phase = 'input' | 'transcribing' | 'transcript-ready' | 'generating' | 'don
 type InputMode = 'topic' | 'voice' | 'video' | 'video-file' | 'image' | 'pdf'
 type FormatType = 'vertical' | 'landscape'
 
-const VERTICAL_PLATFORMS = ['Instagram Reels', 'YouTube Shorts', 'TikTok', 'LinkedIn'] as const
+const VERTICAL_PLATFORMS = ['Instagram Reels', 'YouTube Shorts', 'LinkedIn'] as const
 const LANDSCAPE_PLATFORMS = ['YouTube (Long-form)', 'LinkedIn Video', 'Facebook Video', 'Webinar'] as const
 type VerticalPlatform = typeof VERTICAL_PLATFORMS[number]
 type LandscapePlatform = typeof LANDSCAPE_PLATFORMS[number]

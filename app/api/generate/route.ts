@@ -10,7 +10,6 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY ?? '' })
 const PLATFORM_INSTRUCTIONS: Record<string, string> = {
   'Instagram Reels': 'Platform: Instagram Reels. Hook must be ≤15 words — punchy, visual, emotionally immediate. Script length: 30–60 seconds. Prioritise visual storytelling and fast cuts.',
   'YouTube Shorts': 'Platform: YouTube Shorts. Hook should be a compelling question or a shocking stat. Script length: 45–60 seconds. Keep energy high throughout.',
-  'TikTok': 'Platform: TikTok. Ultra-casual tone, trend-aware language, native TikTok slang is fine. Script length: ≤30 seconds. Jump straight into the action — no warm-up.',
   'LinkedIn': 'Platform: LinkedIn. Professional, insight-driven tone. Lead with a strong opinion or counterintuitive fact. Script length: 60–90 seconds. End with a thought-provoking question or clear takeaway.',
 }
 
