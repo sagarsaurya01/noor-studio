@@ -314,8 +314,8 @@ export default function ProjectPage() {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="relative w-12 h-12 mx-auto mb-5">
-            <div className="absolute inset-0 rounded-full border border-purple-500/20" />
-            <div className="absolute inset-0 rounded-full border border-transparent border-t-purple-500 animate-spin" />
+            <div className="absolute inset-0 rounded-full border border-amber-500/20" />
+            <div className="absolute inset-0 rounded-full border border-transparent border-t-amber-500 animate-spin" />
           </div>
           <p className="text-zinc-600 text-sm font-medium">Loading project...</p>
         </div>
@@ -329,8 +329,8 @@ export default function ProjectPage() {
     <div className="min-h-screen bg-black text-white">
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="glow-orb absolute -top-48 right-1/4 w-[600px] h-[600px] bg-purple-700/18 rounded-full blur-[140px]" />
-        <div className="glow-orb absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-violet-800/12 rounded-full blur-[100px]" style={{ animationDelay: '3s' }} />
+        <div className="glow-orb absolute -top-48 right-1/4 w-[600px] h-[600px] bg-amber-700/18 rounded-full blur-[140px]" />
+        <div className="glow-orb absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-amber-800/12 rounded-full blur-[100px]" style={{ animationDelay: '3s' }} />
       </div>
 
       {/* Sticky Nav */}
@@ -345,7 +345,7 @@ export default function ProjectPage() {
             <div className="w-px h-4 bg-white/[0.08]" />
             <div className="flex items-center gap-2">
               <div className="relative flex items-center justify-center w-6 h-6 rounded-lg overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-violet-600 to-purple-800" />
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800" />
                 <span className="relative text-[11px] font-black text-white z-10">N</span>
               </div>
               <span className="text-xs font-bold text-zinc-400">Noor Studio</span>
@@ -376,7 +376,7 @@ export default function ProjectPage() {
                 >
                   {extracting ? (
                     <>
-                      <span className="w-3.5 h-3.5 border border-purple-400/70 border-t-transparent rounded-full animate-spin" />
+                      <span className="w-3.5 h-3.5 border border-amber-400/70 border-t-transparent rounded-full animate-spin" />
                       Extracting...
                     </>
                   ) : (
@@ -424,7 +424,7 @@ export default function ProjectPage() {
                       onClick={() => setRegenTone(t)}
                       className={`px-3.5 py-1.5 rounded-lg border text-xs font-semibold transition-all duration-200 ${
                         regenTone === t
-                          ? 'border-purple-500/50 bg-purple-600/15 text-purple-300'
+                          ? 'border-amber-500/50 bg-amber-600/15 text-amber-300'
                           : 'border-white/[0.08] text-zinc-500 hover:border-white/[0.14] hover:text-zinc-300'
                       }`}
                     >
@@ -501,7 +501,7 @@ export default function ProjectPage() {
               </span>
             )}
             {project.platform && (
-              <span className="text-[10px] text-purple-400 bg-purple-500/[0.08] border border-purple-500/20 px-2.5 py-1 rounded-full uppercase tracking-widest font-bold">
+              <span className="text-[10px] text-amber-400 bg-amber-500/[0.08] border border-amber-500/20 px-2.5 py-1 rounded-full uppercase tracking-widest font-bold">
                 {project.platform}
               </span>
             )}
@@ -512,11 +512,11 @@ export default function ProjectPage() {
         {/* Brief card */}
         <div className="relative glass rounded-3xl overflow-hidden mb-8 card-hover">
           {/* Purple gradient right side */}
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-purple-600/[0.07] to-transparent pointer-events-none" />
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/25 to-transparent" />
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-amber-600/[0.07] to-transparent pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/25 to-transparent" />
 
           <div className="relative p-7">
-            <p className="text-[10px] font-bold text-purple-500 uppercase tracking-[0.2em] mb-6">Content Brief</p>
+            <p className="text-[10px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-6">Content Brief</p>
             <div className="grid grid-cols-2 gap-x-10 gap-y-6">
               <div>
                 <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-2">Core Topic</p>
@@ -549,13 +549,13 @@ export default function ProjectPage() {
               onClick={() => setTab(t.key as 'scripts' | 'storyboard' | 'broll' | 'publish')}
               className={`relative flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                 tab === t.key
-                  ? 'bg-violet-600 text-white shadow-lg shadow-violet-700/40'
+                  ? 'bg-amber-600 text-white shadow-lg shadow-amber-700/40'
                   : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
               {t.label}
               {t.key === 'broll' && frames.length > 0 && (
-                <span className="text-[10px] bg-purple-500/30 text-purple-300 px-1.5 py-0.5 rounded-full tabular-nums">
+                <span className="text-[10px] bg-amber-500/30 text-amber-300 px-1.5 py-0.5 rounded-full tabular-nums">
                   {frames.length}
                 </span>
               )}
@@ -579,22 +579,22 @@ export default function ProjectPage() {
                     isEditing ? 'cursor-default' : 'cursor-pointer'
                   } ${
                     isSelected
-                      ? 'border-purple-500/40 shadow-2xl shadow-purple-600/12'
+                      ? 'border-amber-500/40 shadow-2xl shadow-amber-600/12'
                       : 'border-white/[0.06] hover:border-white/[0.11]'
                   }`}
                 >
                   {/* Selected bg gradient */}
                   {isSelected && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-600/[0.09] via-transparent to-violet-600/[0.04] pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-600/[0.09] via-transparent to-amber-600/[0.04] pointer-events-none" />
                   )}
-                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" style={{ opacity: isSelected ? 1 : undefined }} />
+                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" style={{ opacity: isSelected ? 1 : undefined }} />
 
                   {/* Header row */}
                   <div className="flex items-center justify-between px-6 pt-6 pb-0">
                     <div className="flex items-center gap-2">
                       <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border uppercase tracking-widest ${
                         isSelected
-                          ? 'bg-purple-500/15 text-purple-400 border-purple-500/25'
+                          ? 'bg-amber-500/15 text-amber-400 border-amber-500/25'
                           : 'bg-white/[0.04] text-zinc-500 border-white/[0.08]'
                       }`}>
                         V{script.variation}
@@ -650,7 +650,7 @@ export default function ProjectPage() {
                     <>
                       {/* Intro panel */}
                       <div className="mx-6 mt-5 mb-4 rounded-2xl overflow-hidden">
-                        <div className="bg-gradient-to-br from-blue-500/15 via-indigo-500/10 to-violet-500/8 border border-blue-500/20 p-5">
+                        <div className="bg-gradient-to-br from-blue-500/15 via-indigo-500/10 to-amber-500/8 border border-blue-500/20 p-5">
                           <div className="flex items-center gap-2 mb-3">
                             <div className="w-1.5 h-4 bg-blue-400 rounded-full" />
                             <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Intro</span>
@@ -673,7 +673,7 @@ export default function ProjectPage() {
                         {(script.sections || []).map((section, si) => (
                           <div key={si} className="border border-white/[0.06] rounded-2xl overflow-hidden">
                             <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.05] bg-white/[0.02]">
-                              <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-purple-500/15 border border-purple-500/20 text-[10px] font-black text-purple-400">{si + 1}</span>
+                              <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-500/20 text-[10px] font-black text-amber-400">{si + 1}</span>
                               <span className="text-sm font-bold text-white">{section.title}</span>
                             </div>
                             <div className="px-4 py-3">
@@ -814,11 +814,11 @@ export default function ProjectPage() {
             {extracting && (
               <div className="text-center py-28 animate-slide-up">
                 <div className="relative w-20 h-20 mx-auto mb-10">
-                  <div className="absolute inset-0 rounded-full border border-purple-500/15 animate-[pulse-ring_2s_ease-out_infinite]" />
-                  <div className="absolute inset-0 rounded-full border border-purple-500/10 animate-[pulse-ring_2s_ease-out_infinite_0.5s]" />
-                  <div className="absolute inset-0 rounded-full border border-transparent border-t-purple-500 animate-spin" />
+                  <div className="absolute inset-0 rounded-full border border-amber-500/15 animate-[pulse-ring_2s_ease-out_infinite]" />
+                  <div className="absolute inset-0 rounded-full border border-amber-500/10 animate-[pulse-ring_2s_ease-out_infinite_0.5s]" />
+                  <div className="absolute inset-0 rounded-full border border-transparent border-t-amber-500 animate-spin" />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="14" height="14" rx="2" stroke="#a855f7" strokeWidth="1.4"/><path d="M16 9l5-3v12l-5-3V9z" stroke="#a855f7" strokeWidth="1.4" strokeLinejoin="round"/></svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="14" height="14" rx="2" stroke="#fbbf24" strokeWidth="1.4"/><path d="M16 9l5-3v12l-5-3V9z" stroke="#fbbf24" strokeWidth="1.4" strokeLinejoin="round"/></svg>
                   </div>
                 </div>
                 <h2 className="text-xl font-bold text-white mb-2">Extracting B-Roll</h2>
@@ -829,7 +829,7 @@ export default function ProjectPage() {
                 <div className="flex flex-col gap-2.5 max-w-xs mx-auto">
                   {['Downloading video (720p)', 'Extracting frames (1 per 5s)', 'Cutting B-roll clips'].map((s, i) => (
                     <div key={s} className="flex items-center gap-3 text-sm text-zinc-500 glass rounded-xl px-4 py-3">
-                      <div className="w-3.5 h-3.5 border border-purple-500/70 border-t-transparent rounded-full animate-spin shrink-0" style={{ animationDelay: `${i * 0.4}s` }} />
+                      <div className="w-3.5 h-3.5 border border-amber-500/70 border-t-transparent rounded-full animate-spin shrink-0" style={{ animationDelay: `${i * 0.4}s` }} />
                       {s}
                     </div>
                   ))}
@@ -848,14 +848,14 @@ export default function ProjectPage() {
             {/* Empty state */}
             {!extracting && !extractError && frames.length === 0 && clips.length === 0 && (
               <div className="text-center py-28 relative">
-                <div className="absolute inset-0 bg-gradient-to-b from-purple-600/[0.05] to-transparent rounded-3xl pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-amber-600/[0.05] to-transparent rounded-3xl pointer-events-none" />
                 <div className="relative">
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl glass border border-white/[0.08] mb-6 mx-auto">
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2" y="6" width="18" height="16" rx="3" stroke="#a855f7" strokeWidth="1.4"/><path d="M20 10l6-4v16l-6-4v-8z" stroke="#a855f7" strokeWidth="1.4" strokeLinejoin="round"/></svg>
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2" y="6" width="18" height="16" rx="3" stroke="#fbbf24" strokeWidth="1.4"/><path d="M20 10l6-4v16l-6-4v-8z" stroke="#fbbf24" strokeWidth="1.4" strokeLinejoin="round"/></svg>
                   </div>
                   <h3 className="text-xl font-bold text-white mb-3">No B-Roll Extracted Yet</h3>
                   <p className="text-zinc-500 text-sm max-w-sm mx-auto mb-8 leading-relaxed">
-                    Click <span className="text-purple-400 font-semibold">Extract B-Roll</span> in the top bar to download the video and pull out frames &amp; clips automatically.
+                    Click <span className="text-amber-400 font-semibold">Extract B-Roll</span> in the top bar to download the video and pull out frames &amp; clips automatically.
                   </p>
                   <button
                     onClick={handleExtract}
@@ -903,12 +903,12 @@ export default function ProjectPage() {
                           key={i}
                           href={src}
                           download
-                          className="group relative rounded-xl overflow-hidden border border-white/[0.06] hover:border-purple-500/40 transition-all duration-200 aspect-video bg-zinc-900"
+                          className="group relative rounded-xl overflow-hidden border border-white/[0.06] hover:border-amber-500/40 transition-all duration-200 aspect-video bg-zinc-900"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={src} alt={`Frame ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <span className="text-white text-xs font-bold bg-purple-600/90 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                            <span className="text-white text-xs font-bold bg-amber-600/90 px-3 py-1.5 rounded-full backdrop-blur-sm">
                               Save
                             </span>
                           </div>
@@ -932,7 +932,7 @@ export default function ProjectPage() {
                       {clips.map((src, i) => {
                         const label = src.split('clip_')[1]?.replace('s.mp4', '') ?? String(i * 30)
                         return (
-                          <div key={i} className="border border-white/[0.06] hover:border-purple-500/30 rounded-2xl overflow-hidden bg-zinc-950 transition-all duration-200 group card-hover">
+                          <div key={i} className="border border-white/[0.06] hover:border-amber-500/30 rounded-2xl overflow-hidden bg-zinc-950 transition-all duration-200 group card-hover">
                             <video
                               src={src}
                               controls
@@ -946,7 +946,7 @@ export default function ProjectPage() {
                               <a
                                 href={src}
                                 download
-                                className="text-[11px] text-purple-500 hover:text-purple-300 transition-colors font-semibold"
+                                className="text-[11px] text-amber-500 hover:text-amber-300 transition-colors font-semibold"
                               >
                                 Download
                               </a>
@@ -965,12 +965,12 @@ export default function ProjectPage() {
         {/* ─── Storyboard tab ─── */}
         {tab === 'storyboard' && (
           <div className="animate-fade-in">
-            <div className="flex items-center gap-3 mb-7 p-4 bg-purple-500/[0.06] border border-purple-500/15 rounded-2xl">
-              <div className="w-8 h-8 bg-purple-500/15 border border-purple-500/20 rounded-xl flex items-center justify-center">
-                <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="2" stroke="#a855f7" strokeWidth="1.3"/><path d="M5.5 5l4 2.5-4 2.5V5z" fill="#a855f7"/></svg>
+            <div className="flex items-center gap-3 mb-7 p-4 bg-amber-500/[0.06] border border-amber-500/15 rounded-2xl">
+              <div className="w-8 h-8 bg-amber-500/15 border border-amber-500/20 rounded-xl flex items-center justify-center">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="2" stroke="#fbbf24" strokeWidth="1.3"/><path d="M5.5 5l4 2.5-4 2.5V5z" fill="#fbbf24"/></svg>
               </div>
               <div>
-                <p className="text-sm font-semibold text-purple-300">Based on Variation {selected + 1}</p>
+                <p className="text-sm font-semibold text-amber-300">Based on Variation {selected + 1}</p>
                 <p className="text-xs text-zinc-600">{project.storyboard.length} scenes · Ready to shoot</p>
               </div>
             </div>
@@ -985,8 +985,8 @@ export default function ProjectPage() {
 
                   {/* Scene header */}
                   <div className="relative flex items-center gap-3 px-6 py-4 border-b border-white/[0.05]">
-                    <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500/20 to-violet-500/20 border border-purple-500/20">
-                      <span className="text-xs font-black text-purple-400">{scene.scene}</span>
+                    <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-500/20 border border-amber-500/20">
+                      <span className="text-xs font-black text-amber-400">{scene.scene}</span>
                     </div>
                     <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{scene.duration}</span>
                     <div className="ml-auto">
@@ -1026,7 +1026,7 @@ export default function ProjectPage() {
             {/* Platform badge + generate button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold text-purple-400 bg-purple-500/[0.10] border border-purple-500/20 px-3 py-1.5 rounded-full uppercase tracking-widest">
+                <span className="text-[10px] font-bold text-amber-400 bg-amber-500/[0.10] border border-amber-500/20 px-3 py-1.5 rounded-full uppercase tracking-widest">
                   {project.platform || 'Instagram Reels'}
                 </span>
                 <span className="text-xs text-zinc-600">Using Variation {selected + 1}</span>
@@ -1061,7 +1061,7 @@ export default function ProjectPage() {
             {!socialCopy && !socialLoading && !socialError && (
               <div className="text-center py-20 glass rounded-3xl border border-white/[0.06]">
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl glass border border-white/[0.08] mb-5">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="#a855f7" strokeWidth="1.4" strokeLinejoin="round"/></svg>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="#fbbf24" strokeWidth="1.4" strokeLinejoin="round"/></svg>
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2">Ready to publish?</h3>
                 <p className="text-zinc-500 text-sm max-w-sm mx-auto leading-relaxed">
@@ -1110,7 +1110,7 @@ export default function ProjectPage() {
 
               {thumbnailLoading && (
                 <div className="flex flex-col items-center justify-center py-16 gap-4">
-                  <div className="w-10 h-10 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                  <div className="w-10 h-10 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
                   <p className="text-zinc-500 text-sm">Creating your thumbnail with DALL·E 3…</p>
                 </div>
               )}
@@ -1118,7 +1118,7 @@ export default function ProjectPage() {
               {!thumbnailUrl && !thumbnailLoading && !thumbnailError && (
                 <div className="flex items-center justify-center py-12 rounded-2xl border border-dashed border-white/[0.08]">
                   <div className="text-center">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="mx-auto mb-3 opacity-30"><rect x="2" y="6" width="28" height="20" rx="3" stroke="#a855f7" strokeWidth="1.5"/><circle cx="10" cy="13" r="2.5" stroke="#a855f7" strokeWidth="1.5"/><path d="M2 22l7-6 5 5 4-4 8 8" stroke="#a855f7" strokeWidth="1.5" strokeLinejoin="round"/></svg>
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="mx-auto mb-3 opacity-30"><rect x="2" y="6" width="28" height="20" rx="3" stroke="#fbbf24" strokeWidth="1.5"/><circle cx="10" cy="13" r="2.5" stroke="#fbbf24" strokeWidth="1.5"/><path d="M2 22l7-6 5 5 4-4 8 8" stroke="#fbbf24" strokeWidth="1.5" strokeLinejoin="round"/></svg>
                     <p className="text-zinc-600 text-xs">Click Generate Thumbnail to create your image</p>
                   </div>
                 </div>
@@ -1173,7 +1173,7 @@ export default function ProjectPage() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {socialCopy.hashtags.map((tag, i) => (
-                      <span key={i} className="bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-1 rounded-full text-xs font-medium">
+                      <span key={i} className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-full text-xs font-medium">
                         {tag}
                       </span>
                     ))}

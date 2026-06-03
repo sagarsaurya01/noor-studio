@@ -321,8 +321,8 @@ export default function NewProjectPage() {
     <div className="min-h-screen bg-black text-white">
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="glow-orb absolute -top-48 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-purple-700/20 rounded-full blur-[140px]" />
-        <div className="glow-orb absolute bottom-0 right-0 w-[400px] h-[400px] bg-violet-800/15 rounded-full blur-[100px]" style={{ animationDelay: '3s' }} />
+        <div className="glow-orb absolute -top-48 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-amber-700/20 rounded-full blur-[140px]" />
+        <div className="glow-orb absolute bottom-0 right-0 w-[400px] h-[400px] bg-amber-800/15 rounded-full blur-[100px]" style={{ animationDelay: '3s' }} />
       </div>
 
       {/* Nav */}
@@ -330,7 +330,7 @@ export default function NewProjectPage() {
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             <div className="relative flex items-center justify-center w-8 h-8 rounded-xl overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-violet-600 to-purple-800" />
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800" />
               <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
               <span className="relative text-sm font-black text-white tracking-tighter z-10">N</span>
             </div>
@@ -355,9 +355,9 @@ export default function NewProjectPage() {
         {phase === 'generating' && (
           <div className="text-center py-24 animate-slide-up">
             <div className="relative w-16 h-16 mx-auto mb-12">
-              <div className="absolute inset-0 rounded-full border border-purple-500/20" />
-              <div className="absolute inset-0 rounded-full border border-transparent border-t-purple-500 animate-spin" />
-              <div className="absolute inset-2 rounded-full border border-transparent border-t-violet-400/40 animate-spin" style={{ animationDuration: '1.5s' }} />
+              <div className="absolute inset-0 rounded-full border border-amber-500/20" />
+              <div className="absolute inset-0 rounded-full border border-transparent border-t-amber-500 animate-spin" />
+              <div className="absolute inset-2 rounded-full border border-transparent border-t-amber-400/40 animate-spin" style={{ animationDuration: '1.5s' }} />
             </div>
 
             <div className="flex items-center justify-center gap-0 mb-10">
@@ -368,7 +368,7 @@ export default function NewProjectPage() {
                       genStep > i + 1
                         ? 'bg-emerald-500 border-emerald-500 text-white'
                         : genStep === i + 1
-                          ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-600/40'
+                          ? 'bg-amber-600 border-amber-500 text-white shadow-lg shadow-amber-600/40'
                           : 'bg-zinc-900 border-zinc-700 text-zinc-600'
                     }`}>
                       {genStep > i + 1 ? (
@@ -378,7 +378,7 @@ export default function NewProjectPage() {
                       )}
                     </div>
                     <span className={`text-[10px] font-medium transition-colors duration-300 whitespace-nowrap ${
-                      genStep > i + 1 ? 'text-emerald-500' : genStep === i + 1 ? 'text-purple-400' : 'text-zinc-700'
+                      genStep > i + 1 ? 'text-emerald-500' : genStep === i + 1 ? 'text-amber-400' : 'text-zinc-700'
                     }`}>{s}</span>
                   </div>
                   {i < genSteps.length - 1 && (
@@ -401,16 +401,16 @@ export default function NewProjectPage() {
         {phase === 'transcribing' && (
           <div className="text-center py-24 animate-slide-up">
             <div className="relative w-20 h-20 mx-auto mb-10">
-              <div className="absolute inset-0 rounded-full border border-purple-500/15 animate-[pulse-ring_2.2s_ease-out_infinite]" />
-              <div className="absolute inset-0 rounded-full border border-purple-500/10 animate-[pulse-ring_2.2s_ease-out_infinite_0.6s]" />
-              <div className="absolute inset-0 rounded-full border border-transparent border-t-purple-500 animate-spin" />
+              <div className="absolute inset-0 rounded-full border border-amber-500/15 animate-[pulse-ring_2.2s_ease-out_infinite]" />
+              <div className="absolute inset-0 rounded-full border border-amber-500/10 animate-[pulse-ring_2.2s_ease-out_infinite_0.6s]" />
+              <div className="absolute inset-0 rounded-full border border-transparent border-t-amber-500 animate-spin" />
               <div className="absolute inset-0 flex items-center justify-center">
                 {mode === 'image' ? (
-                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="4" width="18" height="14" rx="2" stroke="#a855f7" strokeWidth="1.4"/><circle cx="7.5" cy="9" r="1.5" stroke="#a855f7" strokeWidth="1.3"/><path d="M2 16l5-5 3.5 3.5L14 10l6 6" stroke="#a855f7" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="4" width="18" height="14" rx="2" stroke="#fbbf24" strokeWidth="1.4"/><circle cx="7.5" cy="9" r="1.5" stroke="#fbbf24" strokeWidth="1.3"/><path d="M2 16l5-5 3.5 3.5L14 10l6 6" stroke="#fbbf24" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 ) : mode === 'pdf' ? (
-                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M13 2H5a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="#a855f7" strokeWidth="1.4" strokeLinejoin="round"/><path d="M13 2v6h6" stroke="#a855f7" strokeWidth="1.4" strokeLinejoin="round"/></svg>
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M13 2H5a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="#fbbf24" strokeWidth="1.4" strokeLinejoin="round"/><path d="M13 2v6h6" stroke="#fbbf24" strokeWidth="1.4" strokeLinejoin="round"/></svg>
                 ) : (
-                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="8" y="2" width="6" height="12" rx="3" stroke="#a855f7" strokeWidth="1.4"/><path d="M4 11c0 3.87 3.13 7 7 7s7-3.13 7-7" stroke="#a855f7" strokeWidth="1.4" strokeLinecap="round"/><path d="M11 18v2" stroke="#a855f7" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="8" y="2" width="6" height="12" rx="3" stroke="#fbbf24" strokeWidth="1.4"/><path d="M4 11c0 3.87 3.13 7 7 7s7-3.13 7-7" stroke="#fbbf24" strokeWidth="1.4" strokeLinecap="round"/><path d="M11 18v2" stroke="#fbbf24" strokeWidth="1.4" strokeLinecap="round"/></svg>
                 )}
               </div>
             </div>
@@ -433,7 +433,7 @@ export default function NewProjectPage() {
               ).map((s, i) => (
                 <div key={s} className="flex items-center gap-3 text-sm text-zinc-500 glass rounded-xl px-4 py-3">
                   <div
-                    className="w-3.5 h-3.5 border border-purple-500/70 border-t-transparent rounded-full animate-spin shrink-0"
+                    className="w-3.5 h-3.5 border border-amber-500/70 border-t-transparent rounded-full animate-spin shrink-0"
                     style={{ animationDelay: `${i * 0.35}s` }}
                   />
                   {s}
@@ -455,19 +455,19 @@ export default function NewProjectPage() {
                   {mode === 'image' ? 'Image Analysed' : mode === 'pdf' ? 'Content Extracted' : mode === 'voice' ? 'Voice Transcribed' : 'Transcript Ready'}
                 </h2>
                 <p className="text-zinc-500 text-sm mt-0.5">
-                  Extracted via <span className="text-purple-400 font-semibold">{transcriptMethod}</span>
+                  Extracted via <span className="text-amber-400 font-semibold">{transcriptMethod}</span>
                 </p>
               </div>
             </div>
 
             {/* B-Roll hint strip — only for video modes */}
             {(mode === 'video' || mode === 'video-file') && (
-              <div className="flex items-start gap-3 mb-7 p-4 rounded-xl border border-purple-500/15 bg-purple-500/[0.06]">
+              <div className="flex items-start gap-3 mb-7 p-4 rounded-xl border border-amber-500/15 bg-amber-500/[0.06]">
                 <div className="shrink-0 mt-0.5">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="#a855f7" strokeWidth="1.3"/><path d="M6 6l4 2-4 2V6z" fill="#a855f7"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="#fbbf24" strokeWidth="1.3"/><path d="M6 6l4 2-4 2V6z" fill="#fbbf24"/></svg>
                 </div>
-                <p className="text-xs text-purple-300 leading-relaxed">
-                  <span className="font-semibold text-purple-200">B-Roll &amp; Frames</span> — after you generate, open the project and click{' '}
+                <p className="text-xs text-amber-300 leading-relaxed">
+                  <span className="font-semibold text-amber-200">B-Roll &amp; Frames</span> — after you generate, open the project and click{' '}
                   <span className="font-semibold text-white">Extract B-Roll</span> in the top bar to pull frames and clips from this video.
                 </p>
               </div>
@@ -481,8 +481,8 @@ export default function NewProjectPage() {
                 </label>
                 <span className="text-[10px] text-zinc-700 tabular-nums">{transcript.split(' ').length} words</span>
               </div>
-              <div className="relative rounded-2xl overflow-hidden border border-white/[0.07] focus-within:border-purple-500/40 transition-all duration-200 focus-within:shadow-[0_0_0_3px_rgba(168,85,247,0.1)]">
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
+              <div className="relative rounded-2xl overflow-hidden border border-white/[0.07] focus-within:border-amber-500/40 transition-all duration-200 focus-within:shadow-[0_0_0_3px_rgba(245,166,35,0.1)]">
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
                 <textarea
                   value={transcript}
                   onChange={(e) => setTranscript(e.target.value)}
@@ -523,7 +523,7 @@ export default function NewProjectPage() {
         {phase === 'input' && (
           <div className="animate-slide-up">
             <div className="mb-10">
-              <p className="text-[11px] font-bold tracking-[0.18em] text-purple-500 uppercase mb-3">New Project</p>
+              <p className="text-[11px] font-bold tracking-[0.18em] text-amber-500 uppercase mb-3">New Project</p>
               <h1 className="text-4xl font-black tracking-tight mb-3">
                 <span className="gradient-text-white">What are we</span>
                 <br />
@@ -542,17 +542,17 @@ export default function NewProjectPage() {
                     onClick={() => { setMode(m.key); setError(''); setSelectedFile(null); setAudioBlob(null); if (isRecording) handleStopRecording() }}
                     className={`relative p-4 rounded-2xl border text-left transition-all duration-200 overflow-hidden ${
                       isSelected
-                        ? 'border-purple-500/50 bg-gradient-to-br from-purple-600/12 to-violet-600/6 shadow-lg shadow-purple-600/10'
+                        ? 'border-amber-500/50 bg-gradient-to-br from-amber-600/12 to-amber-600/6 shadow-lg shadow-amber-600/10'
                         : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.10] hover:bg-white/[0.04]'
                     }`}
                   >
                     {isSelected && (
                       <>
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
-                        <div className="absolute top-2 right-2 w-2 h-2 bg-purple-500 rounded-full shadow-md shadow-purple-500/50" />
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+                        <div className="absolute top-2 right-2 w-2 h-2 bg-amber-500 rounded-full shadow-md shadow-amber-500/50" />
                       </>
                     )}
-                    <div className={`mb-2.5 transition-colors duration-200 ${isSelected ? 'text-purple-400' : 'text-zinc-600'}`}>
+                    <div className={`mb-2.5 transition-colors duration-200 ${isSelected ? 'text-amber-400' : 'text-zinc-600'}`}>
                       {m.icon}
                     </div>
                     <div className={`font-bold mb-1 text-xs transition-colors duration-200 ${isSelected ? 'text-white' : 'text-zinc-300'}`}>
@@ -572,17 +572,17 @@ export default function NewProjectPage() {
                     onClick={() => { setMode(m.key); setError(''); setSelectedFile(null); setAudioBlob(null); if (isRecording) handleStopRecording() }}
                     className={`relative p-4 rounded-2xl border text-left transition-all duration-200 overflow-hidden ${
                       isSelected
-                        ? 'border-purple-500/50 bg-gradient-to-br from-purple-600/12 to-violet-600/6 shadow-lg shadow-purple-600/10'
+                        ? 'border-amber-500/50 bg-gradient-to-br from-amber-600/12 to-amber-600/6 shadow-lg shadow-amber-600/10'
                         : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.10] hover:bg-white/[0.04]'
                     }`}
                   >
                     {isSelected && (
                       <>
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
-                        <div className="absolute top-2 right-2 w-2 h-2 bg-purple-500 rounded-full shadow-md shadow-purple-500/50" />
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+                        <div className="absolute top-2 right-2 w-2 h-2 bg-amber-500 rounded-full shadow-md shadow-amber-500/50" />
                       </>
                     )}
-                    <div className={`mb-2.5 transition-colors duration-200 ${isSelected ? 'text-purple-400' : 'text-zinc-600'}`}>
+                    <div className={`mb-2.5 transition-colors duration-200 ${isSelected ? 'text-amber-400' : 'text-zinc-600'}`}>
                       {m.icon}
                     </div>
                     <div className={`font-bold mb-1 text-xs transition-colors duration-200 ${isSelected ? 'text-white' : 'text-zinc-300'}`}>
@@ -613,7 +613,7 @@ export default function NewProjectPage() {
                     onClick={() => handleFormatChange(f.key)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
                       formatType === f.key
-                        ? 'bg-violet-600 text-white shadow-lg shadow-violet-700/40'
+                        ? 'bg-amber-600 text-white shadow-lg shadow-amber-700/40'
                         : 'text-zinc-500 hover:text-zinc-300'
                     }`}
                   >
@@ -638,7 +638,7 @@ export default function NewProjectPage() {
                       onClick={() => setPlatform(p)}
                       className={`px-4 py-2 rounded-xl border text-sm font-semibold transition-all duration-200 ${
                         isSelected
-                          ? 'border-purple-500/50 bg-purple-600/15 text-purple-300 shadow-sm shadow-purple-600/10'
+                          ? 'border-amber-500/50 bg-amber-600/15 text-amber-300 shadow-sm shadow-amber-600/10'
                           : 'border-white/[0.08] bg-white/[0.03] text-zinc-500 hover:border-white/[0.14] hover:text-zinc-300'
                       }`}
                     >
@@ -655,7 +655,7 @@ export default function NewProjectPage() {
                 <label className="block text-[10px] font-bold text-zinc-600 uppercase tracking-[0.15em] mb-3">
                   What is your content about?
                 </label>
-                <div className="relative rounded-2xl overflow-hidden border border-white/[0.07] focus-within:border-purple-500/40 transition-all duration-200 focus-within:shadow-[0_0_0_3px_rgba(168,85,247,0.08)]">
+                <div className="relative rounded-2xl overflow-hidden border border-white/[0.07] focus-within:border-amber-500/40 transition-all duration-200 focus-within:shadow-[0_0_0_3px_rgba(245,166,35,0.08)]">
                   <textarea
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
@@ -683,7 +683,7 @@ export default function NewProjectPage() {
                     className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 ${
                       isRecording
                         ? 'bg-red-500/20 border-2 border-red-500/60 shadow-lg shadow-red-500/20'
-                        : 'bg-purple-600/15 border-2 border-purple-500/40 hover:bg-purple-600/25 hover:border-purple-500/70 shadow-lg shadow-purple-600/10'
+                        : 'bg-amber-600/15 border-2 border-amber-500/40 hover:bg-amber-600/25 hover:border-amber-500/70 shadow-lg shadow-amber-600/10'
                     }`}
                   >
                     {isRecording && (
@@ -697,9 +697,9 @@ export default function NewProjectPage() {
                     ) : (
                       /* Mic icon */
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <rect x="9" y="2" width="6" height="13" rx="3" stroke="#a855f7" strokeWidth="1.6"/>
-                        <path d="M5 12c0 3.87 3.13 7 7 7s7-3.13 7-7" stroke="#a855f7" strokeWidth="1.6" strokeLinecap="round"/>
-                        <path d="M12 19v3" stroke="#a855f7" strokeWidth="1.6" strokeLinecap="round"/>
+                        <rect x="9" y="2" width="6" height="13" rx="3" stroke="#fbbf24" strokeWidth="1.6"/>
+                        <path d="M5 12c0 3.87 3.13 7 7 7s7-3.13 7-7" stroke="#fbbf24" strokeWidth="1.6" strokeLinecap="round"/>
+                        <path d="M12 19v3" stroke="#fbbf24" strokeWidth="1.6" strokeLinecap="round"/>
                       </svg>
                     )}
                   </button>
@@ -749,7 +749,7 @@ export default function NewProjectPage() {
                 <label className="block text-[10px] font-bold text-zinc-600 uppercase tracking-[0.15em] mb-3">
                   Paste video link
                 </label>
-                <div className="relative rounded-2xl overflow-hidden border border-white/[0.07] focus-within:border-purple-500/40 transition-all duration-200 focus-within:shadow-[0_0_0_3px_rgba(168,85,247,0.08)]">
+                <div className="relative rounded-2xl overflow-hidden border border-white/[0.07] focus-within:border-amber-500/40 transition-all duration-200 focus-within:shadow-[0_0_0_3px_rgba(245,166,35,0.08)]">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700">
                     <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M8.5 4H11a3 3 0 010 6H8.5M6.5 11H4a3 3 0 010-6h2.5M5 7.5h5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
                   </div>
@@ -787,7 +787,7 @@ export default function NewProjectPage() {
                   onClick={() => fileInputRef.current?.click()}
                   className={`w-full border-2 border-dashed rounded-2xl px-6 py-10 text-center transition-all duration-200 ${
                     selectedFile
-                      ? 'border-purple-500/40 bg-purple-500/[0.06]'
+                      ? 'border-amber-500/40 bg-amber-500/[0.06]'
                       : 'border-white/[0.08] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04]'
                   }`}
                 >

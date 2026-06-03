@@ -61,13 +61,13 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && sendOTP()}
                   placeholder="you@example.com"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
                 />
               </div>
               <button
                 onClick={sendOTP}
                 disabled={loading || !email}
-                className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-medium py-3 rounded-lg transition"
+                className="w-full bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-medium py-3 rounded-lg transition"
               >
                 {loading ? 'Sending...' : 'Send OTP'}
               </button>
@@ -84,13 +84,13 @@ export default function LoginPage() {
                   onKeyDown={(e) => e.key === 'Enter' && verifyOTP()}
                   placeholder="123456"
                   maxLength={6}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-center text-2xl tracking-widest"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 text-center text-2xl tracking-widest"
                 />
               </div>
               <button
                 onClick={verifyOTP}
                 disabled={loading || otp.length < 6}
-                className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-medium py-3 rounded-lg transition"
+                className="w-full bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-medium py-3 rounded-lg transition"
               >
                 {loading ? 'Verifying...' : 'Verify & Sign In'}
               </button>
