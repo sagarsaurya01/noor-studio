@@ -1,51 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { exec } from 'child_process'
-import { promisify } from 'util'
+import { YoutubeTranscript } from 'youtube-transcript'
+import ytdl from '@distube/ytdl-core'
 import path from 'path'
 import os from 'os'
 import fs from 'fs'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 120
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-const execAsync = promisify(exec)
+function cleanTranscript(items: { text: string }[]): string {
+  const lines = items
+    .map(i => i.text.replace(/\[.*?\]/gi, '').replace(/\(.*?\)/gi, '').trim())
+    .filter(l => l.length > 1)
 
-function parseCaptions(filePath: string): string {
-  const content = fs.readFileSync(filePath, 'utf-8')
-  const blocks = content.split(/\n\s*\n/)
-  const lines: string[] = []
-
-  for (const block of blocks) {
-    const blockLines = block.trim().split('\n')
-
-    // Skip header/meta blocks
-    if (
-      blockLines[0].startsWith('WEBVTT') ||
-      blockLines[0].startsWith('Kind:') ||
-      blockLines[0].startsWith('Language:') ||
-      blockLines[0].startsWith('NOTE') ||
-      blockLines[0].startsWith('X-TIMESTAMP')
-    ) continue
-
-    // Skip blocks without a timestamp
-    if (!blockLines.some(l => /-->/.test(l))) continue
-
-    for (const line of blockLines) {
-      if (/-->/.test(line)) continue           // skip timestamp lines
-      if (/^\s*\d+\s*$/.test(line)) continue  // skip sequence numbers
-      if (!line.trim()) continue               // skip empty lines
-
-      const cleaned = line
-        .replace(/<[^>]+>/g, '')              // remove <c>, <b> etc
-        .replace(/\[.*?\]/gi, '')             // remove [music], [applause]
-        .replace(/\(.*?\)/gi, '')             // remove (music)
-        .trim()
-
-      if (cleaned.length > 1) lines.push(cleaned)
-    }
-  }
-
-  // Remove consecutive duplicate lines (YouTube overlapping windows)
+  // Remove consecutive duplicates
   const deduped: string[] = []
   for (const line of lines) {
     if (deduped.length === 0 || deduped[deduped.length - 1] !== line) {
@@ -53,93 +23,68 @@ function parseCaptions(filePath: string): string {
     }
   }
 
-  // Join into full text
-  const joined = deduped.join(' ').replace(/\s{2,}/g, ' ').trim()
-
-  // Remove repeated word sequences (YouTube triples lines in auto-captions)
-  // Split into sentences and deduplicate
-  const sentences = joined.split(/(?<=[.!?])\s+/)
-  const dedupedSentences: string[] = []
-  for (const s of sentences) {
-    if (dedupedSentences.length === 0 || dedupedSentences[dedupedSentences.length - 1] !== s) {
-      dedupedSentences.push(s)
-    }
-  }
-
-  // Final pass: remove duplicate word chunks of 5+ words
-  const words = dedupedSentences.join(' ').split(' ')
-  const result: string[] = []
-  let i = 0
-  while (i < words.length) {
-    const chunkSize = 5
-    if (i + chunkSize * 2 <= words.length) {
-      const chunk1 = words.slice(i, i + chunkSize).join(' ').toLowerCase()
-      const chunk2 = words.slice(i + chunkSize, i + chunkSize * 2).join(' ').toLowerCase()
-      if (chunk1 === chunk2) {
-        result.push(...words.slice(i, i + chunkSize))
-        i += chunkSize * 2
-        continue
-      }
-    }
-    result.push(words[i])
-    i++
-  }
-
-  return result.join(' ').replace(/\s{2,}/g, ' ').trim()
+  return deduped.join(' ').replace(/\s{2,}/g, ' ').trim()
 }
+
+function extractVideoId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&\n?#]+)/,
+    /youtube\.com\/embed\/([^&\n?#]+)/,
+  ]
+  for (const pattern of patterns) {
+    const match = url.match(pattern)
+    if (match) return match[1]
+  }
+  return null
+}
+
+// ── Route ─────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   try {
     const { url } = await req.json()
     if (!url) return NextResponse.json({ error: 'No URL provided' }, { status: 400 })
 
-    const outputDir = os.tmpdir()
-    const outputBase = path.join(outputDir, `noor_caps_${Date.now()}`)
+    const videoId = extractVideoId(url)
 
-    // --- Step 1: Try auto-captions first (fast, zero memory) ---
-    try {
-      await execAsync(
-        `yt-dlp --write-auto-sub --skip-download --sub-lang en --convert-subs vtt -o "${outputBase}" "${url}"`,
-        { timeout: 30000 }
-      )
-
-      const capFiles = fs.readdirSync(outputDir).filter(f =>
-        f.startsWith('noor_caps_') && (f.endsWith('.vtt') || f.endsWith('.srt'))
-      )
-
-      if (capFiles.length > 0) {
-        const capPath = path.join(outputDir, capFiles[capFiles.length - 1])
-        const transcript = parseCaptions(capPath)
-        try { fs.unlinkSync(capPath) } catch {}
-
-        const wordCount = transcript.split(' ').filter(Boolean).length
-        if (wordCount >= 150) {
-          return NextResponse.json({ transcript, method: 'captions' })
+    // ── Step 1: Try YouTube transcript API (fast, no download) ──────────────
+    if (videoId) {
+      try {
+        const items = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' })
+        if (items && items.length > 0) {
+          const transcript = cleanTranscript(items)
+          const wordCount = transcript.split(' ').filter(Boolean).length
+          if (wordCount >= 100) {
+            return NextResponse.json({ transcript, method: 'captions' })
+          }
         }
-        // Too short — captions are incomplete, fall through to Whisper
+      } catch {
+        // no captions — fall through to audio
       }
-    } catch {
-      // captions not available — fall through to Whisper
     }
 
-    // --- Step 2: Fall back to audio download + Whisper ---
-    const audioTemplate = path.join(outputDir, `noor_audio_${Date.now()}.%(ext)s`)
-
-    await execAsync(
-      `yt-dlp -x --audio-format mp3 --audio-quality 5 -o "${audioTemplate}" "${url}"`,
-      { timeout: 120000 }
-    )
-
-    const mp3Files = fs.readdirSync(outputDir)
-      .filter(f => f.startsWith('noor_audio_') && f.endsWith('.mp3'))
-      .map(f => ({ name: f, mtime: fs.statSync(path.join(outputDir, f)).mtimeMs }))
-      .sort((a, b) => b.mtime - a.mtime)
-
-    if (mp3Files.length === 0) {
-      return NextResponse.json({ error: 'Could not download video audio' }, { status: 500 })
+    // ── Step 2: Fall back to ytdl audio download + Whisper ──────────────────
+    if (!videoId) {
+      return NextResponse.json(
+        { error: 'Could not extract video ID from URL. Only YouTube URLs are supported for audio fallback.' },
+        { status: 400 }
+      )
     }
 
-    const audioPath = path.join(outputDir, mp3Files[0].name)
+    const audioPath = path.join(os.tmpdir(), `noor_audio_${Date.now()}.mp3`)
+
+    await new Promise<void>((resolve, reject) => {
+      const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, {
+        filter: 'audioonly',
+        quality: 'lowestaudio',
+      })
+      const file = fs.createWriteStream(audioPath)
+      stream.pipe(file)
+      stream.on('error', reject)
+      file.on('finish', resolve)
+      file.on('error', reject)
+    })
+
     return NextResponse.json({ audioPath, method: 'whisper' })
 
   } catch (err: unknown) {
