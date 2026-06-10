@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import Groq from 'groq-sdk'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
@@ -10,9 +10,8 @@ export const dynamic = 'force-dynamic'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const pdfParse: (buffer: Buffer) => Promise<{ text: string }> = (pdfParseModule as any).default ?? pdfParseModule
 
-
 export async function POST(req: NextRequest) {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? '' })
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' })
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File | null
@@ -36,14 +35,14 @@ export async function POST(req: NextRequest) {
       fs.writeFileSync(filePath, buffer)
 
       const fileStream = fs.createReadStream(filePath)
-      const transcription = await openai.audio.transcriptions.create({
+      const transcription = await groq.audio.transcriptions.create({
         file: fileStream,
-        model: 'whisper-1',
+        model: 'whisper-large-v3',
       })
 
       try { fs.unlinkSync(filePath) } catch {}
 
-      return NextResponse.json({ transcript: transcription.text, method: 'whisper-openai' })
+      return NextResponse.json({ transcript: transcription.text, method: 'whisper-groq' })
     }
 
     return NextResponse.json({ error: 'Invalid type. Must be video, audio, or pdf' }, { status: 400 })

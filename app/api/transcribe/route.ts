@@ -1,22 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import Groq from 'groq-sdk'
 import fs from 'fs'
 
 export const dynamic = 'force-dynamic'
 
-
-
 export async function POST(req: NextRequest) {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? '' })
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' })
   try {
     const { audioPath } = await req.json()
     if (!audioPath) return NextResponse.json({ error: 'No audio path provided' }, { status: 400 })
     if (!fs.existsSync(audioPath)) return NextResponse.json({ error: 'Audio file not found' }, { status: 400 })
 
     const fileStream = fs.createReadStream(audioPath)
-    const transcription = await openai.audio.transcriptions.create({
+    const transcription = await groq.audio.transcriptions.create({
       file: fileStream,
-      model: 'whisper-1',
+      model: 'whisper-large-v3',
     })
 
     // Cleanup audio file
