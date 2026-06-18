@@ -6,6 +6,15 @@ import os from 'os'
 import * as pdfParseModule from 'pdf-parse'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 120
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+}
+
+const MAX_FILE_SIZE = 24 * 1024 * 1024 // 24MB (Groq limit is 25MB)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const pdfParse: (buffer: Buffer) => Promise<{ text: string }> = (pdfParseModule as any).default ?? pdfParseModule
@@ -19,6 +28,12 @@ export async function POST(req: NextRequest) {
 
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     if (!type) return NextResponse.json({ error: 'No type provided' }, { status: 400 })
+
+    if ((type === 'video' || type === 'audio') && file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({
+        error: `File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is 24MB. Please use a YouTube/Instagram link instead — paste it in the video link input.`
+      }, { status: 413 })
+    }
 
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
