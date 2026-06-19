@@ -739,6 +739,34 @@ export default function NewProjectPage() {
                       className="w-full h-8 opacity-60"
                     />
                   )}
+
+                  {/* Upload audio file */}
+                  {!isRecording && (
+                    <div className="w-full border-t border-white/[0.06] pt-4 flex flex-col items-center gap-2">
+                      <p className="text-zinc-600 text-xs">— or upload an audio file —</p>
+                      <label className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-zinc-400 text-xs font-medium">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#a1a1aa" strokeWidth="1.6" strokeLinecap="round"/><polyline points="17 8 12 3 7 8" stroke="#a1a1aa" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="#a1a1aa" strokeWidth="1.6" strokeLinecap="round"/></svg>
+                        Upload MP3 / M4A / WAV
+                        <input
+                          type="file"
+                          accept="audio/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0]
+                            if (!f) return
+                            if (f.size > 24 * 1024 * 1024) {
+                              setError('Audio file too large. Maximum is 24MB.')
+                              return
+                            }
+                            setAudioBlob(f)
+                          }}
+                        />
+                      </label>
+                      {audioBlob instanceof File && (
+                        <p className="text-emerald-400 text-xs">{(audioBlob as File).name} ready</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
