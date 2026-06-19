@@ -107,11 +107,32 @@ export default function NewProjectPage() {
   const [isRecording, setIsRecording] = useState(false)
   const [recordingSeconds, setRecordingSeconds] = useState(0)
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isAudioDragging, setIsAudioDragging] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+
+  function handleFileDrop(e: React.DragEvent, type: 'file' | 'audio') {
+    e.preventDefault()
+    if (type === 'file') setIsDragging(false)
+    else setIsAudioDragging(false)
+
+    const f = e.dataTransfer.files?.[0]
+    if (!f) return
+
+    if (type === 'audio') {
+      if (!f.type.startsWith('audio/')) { setError('Please drop an audio file (MP3, M4A, WAV)'); return }
+      if (f.size > 24 * 1024 * 1024) { setError('Audio file too large. Maximum is 24MB.'); return }
+      setAudioBlob(f)
+      setError('')
+    } else {
+      setSelectedFile(f)
+      setError('')
+    }
+  }
 
   const platforms = formatType === 'vertical' ? VERTICAL_PLATFORMS : LANDSCAPE_PLATFORMS
 
@@ -744,9 +765,33 @@ export default function NewProjectPage() {
                   {!isRecording && (
                     <div className="w-full border-t border-white/[0.06] pt-4 flex flex-col items-center gap-2">
                       <p className="text-zinc-600 text-xs">— or upload an audio file —</p>
-                      <label className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-zinc-400 text-xs font-medium">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#a1a1aa" strokeWidth="1.6" strokeLinecap="round"/><polyline points="17 8 12 3 7 8" stroke="#a1a1aa" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="#a1a1aa" strokeWidth="1.6" strokeLinecap="round"/></svg>
-                        Upload MP3 / M4A / WAV
+                      <label
+                        onDragOver={(e) => { e.preventDefault(); setIsAudioDragging(true) }}
+                        onDragLeave={() => setIsAudioDragging(false)}
+                        onDrop={(e) => handleFileDrop(e, 'audio')}
+                        className={`cursor-pointer w-full border-2 border-dashed rounded-xl px-4 py-4 flex flex-col items-center gap-2 transition-all duration-200 ${
+                          isAudioDragging
+                            ? 'border-amber-500/70 bg-amber-500/[0.08]'
+                            : audioBlob instanceof File
+                              ? 'border-emerald-500/40 bg-emerald-500/[0.05]'
+                              : 'border-white/[0.08] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04]'
+                        }`}
+                      >
+                        {isAudioDragging ? (
+                          <p className="text-amber-400 text-xs font-semibold">Drop audio file!</p>
+                        ) : audioBlob instanceof File ? (
+                          <>
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3 3 6-6" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            <p className="text-emerald-400 text-xs font-medium">{(audioBlob as File).name}</p>
+                            <p className="text-zinc-600 text-[10px]">Click to change</p>
+                          </>
+                        ) : (
+                          <>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#a1a1aa" strokeWidth="1.6" strokeLinecap="round"/><polyline points="17 8 12 3 7 8" stroke="#a1a1aa" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="#a1a1aa" strokeWidth="1.6" strokeLinecap="round"/></svg>
+                            <p className="text-zinc-400 text-xs font-medium">Drag & drop or click to upload</p>
+                            <p className="text-zinc-700 text-[10px]">MP3, M4A, WAV · Max 24MB</p>
+                          </>
+                        )}
                         <input
                           type="file"
                           accept="audio/*"
@@ -754,17 +799,12 @@ export default function NewProjectPage() {
                           onChange={(e) => {
                             const f = e.target.files?.[0]
                             if (!f) return
-                            if (f.size > 24 * 1024 * 1024) {
-                              setError('Audio file too large. Maximum is 24MB.')
-                              return
-                            }
+                            if (f.size > 24 * 1024 * 1024) { setError('Audio file too large. Maximum is 24MB.'); return }
                             setAudioBlob(f)
+                            setError('')
                           }}
                         />
                       </label>
-                      {audioBlob instanceof File && (
-                        <p className="text-emerald-400 text-xs">{(audioBlob as File).name} ready</p>
-                      )}
                     </div>
                   )}
                 </div>
@@ -810,16 +850,27 @@ export default function NewProjectPage() {
                     setError('')
                   }}
                 />
-                <button
-                  type="button"
+                <div
                   onClick={() => fileInputRef.current?.click()}
-                  className={`w-full border-2 border-dashed rounded-2xl px-6 py-10 text-center transition-all duration-200 ${
-                    selectedFile
-                      ? 'border-amber-500/40 bg-amber-500/[0.06]'
-                      : 'border-white/[0.08] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04]'
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => handleFileDrop(e, 'file')}
+                  className={`w-full border-2 border-dashed rounded-2xl px-6 py-10 text-center transition-all duration-200 cursor-pointer ${
+                    isDragging
+                      ? 'border-amber-500/70 bg-amber-500/[0.10] scale-[1.01]'
+                      : selectedFile
+                        ? 'border-amber-500/40 bg-amber-500/[0.06]'
+                        : 'border-white/[0.08] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04]'
                   }`}
                 >
-                  {selectedFile ? (
+                  {isDragging ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-10 h-10 bg-amber-500/20 border border-amber-500/40 rounded-xl flex items-center justify-center">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 7l4-4 4 4" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      </div>
+                      <p className="text-amber-400 text-sm font-semibold">Drop it!</p>
+                    </div>
+                  ) : selectedFile ? (
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-10 h-10 bg-emerald-500/15 border border-emerald-500/20 rounded-xl flex items-center justify-center">
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4L15 5" stroke="#34d399" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -833,14 +884,14 @@ export default function NewProjectPage() {
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 7l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                       </div>
                       <div>
-                        <p className="text-zinc-300 text-sm font-medium">Drop file here or click to browse</p>
+                        <p className="text-zinc-300 text-sm font-medium">Drag & drop or click to browse</p>
                         <p className="text-zinc-600 text-xs mt-1">
                           {mode === 'video-file' ? 'MP4, MOV, AVI, MKV' : mode === 'image' ? 'JPEG, PNG, WebP' : 'PDF files'}
                         </p>
                       </div>
                     </div>
                   )}
-                </button>
+                </div>
               </div>
             )}
 
