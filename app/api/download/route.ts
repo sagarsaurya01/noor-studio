@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { YoutubeTranscript } from 'youtube-transcript'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -15,48 +16,15 @@ function extractVideoId(url: string): string | null {
   return null
 }
 
-async function fetchCaptionsViaYouTubeAPI(videoId: string): Promise<string | null> {
-  const apiKey = process.env.YOUTUBE_API_KEY
-  if (!apiKey) return null
-
-  // Get list of caption tracks
-  const listRes = await fetch(
-    `https://www.googleapis.com/youtube/v3/captions?part=snippet&videoId=${videoId}&key=${apiKey}`
-  )
-  if (!listRes.ok) return null
-
-  const listData = await listRes.json() as { items?: Array<{ id: string; snippet: { language: string; trackKind: string } }> }
-  const items = listData.items ?? []
-
-  // Prefer English captions, then any available
-  const track = items.find(i => i.snippet.language === 'en' && i.snippet.trackKind !== 'asr')
-    ?? items.find(i => i.snippet.language === 'en')
-    ?? items[0]
-
-  if (!track) return null
-
-  // Download the caption track as plain text
-  const captionRes = await fetch(
-    `https://www.googleapis.com/youtube/v3/captions/${track.id}?tfmt=srt&key=${apiKey}`
-  )
-  if (!captionRes.ok) return null
-
-  const srt = await captionRes.text()
-
-  // Strip SRT timestamps and numbering, return plain text
-  const text = srt
-    .replace(/^\d+$/gm, '')
-    .replace(/\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}/gm, '')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\[.*?\]/gi, '')
-    .split('\n')
-    .map(l => l.trim())
+function cleanTranscript(items: { text: string }[]): string {
+  const lines = items
+    .map(i => i.text.replace(/\[.*?\]/gi, '').replace(/\(.*?\)/gi, '').trim())
     .filter(l => l.length > 1)
-    .join(' ')
-    .replace(/\s{2,}/g, ' ')
-    .trim()
-
-  return text.length > 50 ? text : null
+  const deduped: string[] = []
+  for (const line of lines) {
+    if (deduped.length === 0 || deduped[deduped.length - 1] !== line) deduped.push(line)
+  }
+  return deduped.join(' ').replace(/\s{2,}/g, ' ').trim()
 }
 
 export async function POST(req: NextRequest) {
@@ -69,15 +37,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Could not extract video ID. Please paste a valid YouTube URL.' }, { status: 400 })
     }
 
-    // Use YouTube Data API v3 to fetch captions (official, no bot detection)
-    const transcript = await fetchCaptionsViaYouTubeAPI(videoId)
-    if (transcript) {
-      return NextResponse.json({ transcript, method: 'captions' })
+    // Try youtube-transcript (fetches auto-generated or manual captions via timedtext API)
+    try {
+      const items = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' })
+      if (items && items.length > 0) {
+        const transcript = cleanTranscript(items)
+        if (transcript.split(' ').filter(Boolean).length >= 50) {
+          return NextResponse.json({ transcript, method: 'captions' })
+        }
+      }
+    } catch {
+      // no captions
     }
 
-    // No captions available — ask user to upload audio instead
+    // No captions — tell user to upload audio
     return NextResponse.json({
-      error: 'This video has no captions available. Please download the audio and use "Upload Audio File" instead, or switch to "Topic / Idea" mode.',
+      error: 'This video has no captions. Please download the audio on your phone and upload it using the "Voice Note" or audio upload option.',
     }, { status: 422 })
 
   } catch (err: unknown) {
