@@ -26,16 +26,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Could not extract video ID. Please paste a valid YouTube URL.' }, { status: 400 })
     }
 
-    // Use Innertube (YouTube's internal app API) — not blocked by bot detection
-    const yt = await Innertube.create({ retrieve_player: false })
+    const yt = await Innertube.create({ retrieve_player: true })
     const info = await yt.getInfo(videoId)
 
-    // Get transcript
-    const transcriptData = await info.getTranscript()
-    const segments = transcriptData?.transcript?.content?.body?.initial_segments ?? []
+    // Get caption tracks from player response
+    const captionTracks = info.captions?.caption_tracks ?? []
+    if (!captionTracks.length) {
+      return NextResponse.json({
+        error: 'This video has no captions. Please upload the audio file using the "Voice Note" upload option instead.',
+      }, { status: 422 })
+    }
 
-    const text = segments
-      .map((s: { snippet?: { text?: string } }) => s.snippet?.text ?? '')
+    // Prefer English manual captions, then auto-generated, then first available
+    const track = captionTracks.find((t: { language_code: string; kind?: string }) => t.language_code === 'en' && t.kind !== 'asr')
+      ?? captionTracks.find((t: { language_code: string }) => t.language_code === 'en')
+      ?? captionTracks[0]
+
+    // Fetch the caption file (json3 format)
+    const captionUrl = (track as { base_url: string }).base_url + '&fmt=json3'
+    const captionRes = await fetch(captionUrl)
+    if (!captionRes.ok) {
+      return NextResponse.json({ error: 'Failed to fetch captions.' }, { status: 500 })
+    }
+
+    const data = await captionRes.json() as {
+      events?: Array<{ segs?: Array<{ utf8: string }> }>
+    }
+
+    const text = (data.events ?? [])
+      .flatMap(e => e.segs ?? [])
+      .map(s => s.utf8?.replace(/\n/g, ' ').trim())
+      .filter(Boolean)
       .join(' ')
       .replace(/\s{2,}/g, ' ')
       .trim()
@@ -45,7 +66,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      error: 'This video has no captions. Please upload the audio file using the "Voice Note" upload option instead.',
+      error: 'Could not extract text from captions. Please try the "Voice Note" upload option instead.',
     }, { status: 422 })
 
   } catch (err: unknown) {
