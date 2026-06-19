@@ -1,30 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { YoutubeTranscript } from 'youtube-transcript'
-import ytdl from '@distube/ytdl-core'
-import path from 'path'
-import os from 'os'
-import fs from 'fs'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 120
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function cleanTranscript(items: { text: string }[]): string {
-  const lines = items
-    .map(i => i.text.replace(/\[.*?\]/gi, '').replace(/\(.*?\)/gi, '').trim())
-    .filter(l => l.length > 1)
-
-  // Remove consecutive duplicates
-  const deduped: string[] = []
-  for (const line of lines) {
-    if (deduped.length === 0 || deduped[deduped.length - 1] !== line) {
-      deduped.push(line)
-    }
-  }
-
-  return deduped.join(' ').replace(/\s{2,}/g, ' ').trim()
-}
+export const maxDuration = 60
 
 function extractVideoId(url: string): string | null {
   const patterns = [
@@ -38,7 +15,49 @@ function extractVideoId(url: string): string | null {
   return null
 }
 
-// ── Route ─────────────────────────────────────────────────────────────────────
+async function fetchCaptionsViaYouTubeAPI(videoId: string): Promise<string | null> {
+  const apiKey = process.env.YOUTUBE_API_KEY
+  if (!apiKey) return null
+
+  // Get list of caption tracks
+  const listRes = await fetch(
+    `https://www.googleapis.com/youtube/v3/captions?part=snippet&videoId=${videoId}&key=${apiKey}`
+  )
+  if (!listRes.ok) return null
+
+  const listData = await listRes.json() as { items?: Array<{ id: string; snippet: { language: string; trackKind: string } }> }
+  const items = listData.items ?? []
+
+  // Prefer English captions, then any available
+  const track = items.find(i => i.snippet.language === 'en' && i.snippet.trackKind !== 'asr')
+    ?? items.find(i => i.snippet.language === 'en')
+    ?? items[0]
+
+  if (!track) return null
+
+  // Download the caption track as plain text
+  const captionRes = await fetch(
+    `https://www.googleapis.com/youtube/v3/captions/${track.id}?tfmt=srt&key=${apiKey}`
+  )
+  if (!captionRes.ok) return null
+
+  const srt = await captionRes.text()
+
+  // Strip SRT timestamps and numbering, return plain text
+  const text = srt
+    .replace(/^\d+$/gm, '')
+    .replace(/\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}/gm, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\[.*?\]/gi, '')
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 1)
+    .join(' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+
+  return text.length > 50 ? text : null
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,46 +65,20 @@ export async function POST(req: NextRequest) {
     if (!url) return NextResponse.json({ error: 'No URL provided' }, { status: 400 })
 
     const videoId = extractVideoId(url)
-
-    // ── Step 1: Try YouTube transcript API (fast, no download) ──────────────
-    if (videoId) {
-      try {
-        const items = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' })
-        if (items && items.length > 0) {
-          const transcript = cleanTranscript(items)
-          const wordCount = transcript.split(' ').filter(Boolean).length
-          if (wordCount >= 100) {
-            return NextResponse.json({ transcript, method: 'captions' })
-          }
-        }
-      } catch {
-        // no captions — fall through to audio
-      }
-    }
-
-    // ── Step 2: Fall back to ytdl audio download + Whisper ──────────────────
     if (!videoId) {
-      return NextResponse.json(
-        { error: 'Could not extract video ID from URL. Only YouTube URLs are supported for audio fallback.' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Could not extract video ID. Please paste a valid YouTube URL.' }, { status: 400 })
     }
 
-    const audioPath = path.join(os.tmpdir(), `noor_audio_${Date.now()}.mp3`)
+    // Use YouTube Data API v3 to fetch captions (official, no bot detection)
+    const transcript = await fetchCaptionsViaYouTubeAPI(videoId)
+    if (transcript) {
+      return NextResponse.json({ transcript, method: 'captions' })
+    }
 
-    await new Promise<void>((resolve, reject) => {
-      const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, {
-        filter: 'audioonly',
-        quality: 'lowestaudio',
-      })
-      const file = fs.createWriteStream(audioPath)
-      stream.pipe(file)
-      stream.on('error', reject)
-      file.on('finish', resolve)
-      file.on('error', reject)
-    })
-
-    return NextResponse.json({ audioPath, method: 'whisper' })
+    // No captions available — ask user to upload audio instead
+    return NextResponse.json({
+      error: 'This video has no captions available. Please download the audio and use "Upload Audio File" instead, or switch to "Topic / Idea" mode.',
+    }, { status: 422 })
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Download failed'
