@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Innertube } from 'youtubei.js'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -26,47 +25,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Could not extract video ID. Please paste a valid YouTube URL.' }, { status: 400 })
     }
 
-    const yt = await Innertube.create({ retrieve_player: true })
-    const info = await yt.getInfo(videoId)
+    // Use Supadata API — handles bot detection on their end, works for Shorts too
+    const res = await fetch(`https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=true`, {
+      headers: {
+        'x-api-key': process.env.SUPADATA_API_KEY ?? '',
+      },
+    })
 
-    // Get caption tracks from player response
-    const captionTracks = info.captions?.caption_tracks ?? []
-    if (!captionTracks.length) {
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({})) as { message?: string }
       return NextResponse.json({
-        error: 'This video has no captions. Please upload the audio file using the "Voice Note" upload option instead.',
+        error: err.message ?? 'Could not fetch transcript. Please upload the audio file using the Voice Note option instead.',
       }, { status: 422 })
     }
 
-    // Prefer English manual captions, then auto-generated, then first available
-    const track = captionTracks.find((t: { language_code: string; kind?: string }) => t.language_code === 'en' && t.kind !== 'asr')
-      ?? captionTracks.find((t: { language_code: string }) => t.language_code === 'en')
-      ?? captionTracks[0]
+    const data = await res.json() as { content?: string; transcript?: string }
+    const transcript = data.content ?? data.transcript ?? ''
 
-    // Fetch the caption file (json3 format)
-    const captionUrl = (track as { base_url: string }).base_url + '&fmt=json3'
-    const captionRes = await fetch(captionUrl)
-    if (!captionRes.ok) {
-      return NextResponse.json({ error: 'Failed to fetch captions.' }, { status: 500 })
-    }
-
-    const data = await captionRes.json() as {
-      events?: Array<{ segs?: Array<{ utf8: string }> }>
-    }
-
-    const text = (data.events ?? [])
-      .flatMap(e => e.segs ?? [])
-      .map(s => s.utf8?.replace(/\n/g, ' ').trim())
-      .filter(Boolean)
-      .join(' ')
-      .replace(/\s{2,}/g, ' ')
-      .trim()
-
-    if (text.length > 50) {
-      return NextResponse.json({ transcript: text, method: 'captions' })
+    if (transcript.length > 50) {
+      return NextResponse.json({ transcript, method: 'captions' })
     }
 
     return NextResponse.json({
-      error: 'Could not extract text from captions. Please try the "Voice Note" upload option instead.',
+      error: 'This video has no captions. Please upload the audio file using the "Voice Note" upload option instead.',
     }, { status: 422 })
 
   } catch (err: unknown) {
