@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -15,6 +16,15 @@ function extractVideoId(url: string): string | null {
   return null
 }
 
+async function fetchSupadata(videoId: string, lang?: string): Promise<string | null> {
+  const url = `https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=true${lang ? `&lang=${lang}` : ''}`
+  const res = await fetch(url, { headers: { 'x-api-key': process.env.SUPADATA_API_KEY ?? '' } })
+  if (!res.ok) return null
+  const data = await res.json() as { content?: string }
+  const text = data.content ?? ''
+  return text.length > 50 ? text : null
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { url } = await req.json()
@@ -25,24 +35,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Could not extract video ID. Please paste a valid YouTube URL.' }, { status: 400 })
     }
 
-    // Use Supadata API — handles bot detection on their end, works for Shorts too
-    const res = await fetch(`https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=true&lang=en`, {
-      headers: {
-        'x-api-key': process.env.SUPADATA_API_KEY ?? '',
-      },
-    })
+    // Try English first
+    let transcript = await fetchSupadata(videoId, 'en')
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({})) as { message?: string }
-      return NextResponse.json({
-        error: err.message ?? 'Could not fetch transcript. Please upload the audio file using the Voice Note option instead.',
-      }, { status: 422 })
+    // Fall back to any language, then translate with Claude
+    if (!transcript) {
+      const anyLang = await fetchSupadata(videoId)
+      if (anyLang) {
+        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+        const msg = await anthropic.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 4000,
+          messages: [{
+            role: 'user',
+            content: `Translate this transcript to English. Return only the translated text, nothing else:\n\n${anyLang.slice(0, 3000)}`,
+          }],
+        })
+        const translated = msg.content[0].type === 'text' ? msg.content[0].text.trim() : ''
+        if (translated.length > 50) transcript = translated
+      }
     }
 
-    const data = await res.json() as { content?: string; transcript?: string }
-    const transcript = data.content ?? data.transcript ?? ''
-
-    if (transcript.length > 50) {
+    if (transcript) {
       return NextResponse.json({ transcript, method: 'captions' })
     }
 
