@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Use Supadata API — handles bot detection on their end, works for Shorts too
-    const res = await fetch(`https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=true`, {
+    const res = await fetch(`https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=true&lang=en`, {
       headers: {
         'x-api-key': process.env.SUPADATA_API_KEY ?? '',
       },
