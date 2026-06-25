@@ -580,7 +580,14 @@ export default function NewProjectPage() {
                 disabled={transcript.trim().length < 20 || !intent}
                 className="btn-primary flex-[2] text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none"
               >
-                Generate Script &amp; Storyboard →
+                {intent ? `Generate → ${[
+                  { id: 'better-hook', label: 'Better Hook' },
+                  { id: 'translate', label: 'Translate & Rewrite' },
+                  { id: 'fresh-angle', label: 'Fresh Angle' },
+                  { id: 'short-reel', label: 'Short Reel' },
+                  { id: 'same-script', label: 'Same Script' },
+                  { id: 'key-points', label: 'Key Points' },
+                ].find(o => o.id === intent)?.label ?? intent}` : 'Select an option above'}
               </button>
             </div>
           </div>
