@@ -610,7 +610,7 @@ export default function NewProjectPage() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">
-                  {mode === 'image' ? 'Image Analysed' : mode === 'pdf' ? 'Content Extracted' : mode === 'voice' ? 'Voice Transcribed' : 'Transcript Ready'}
+                  {mode === 'pdf' ? 'Content Extracted' : mode === 'voice' ? 'Voice Transcribed' : 'Transcript Ready'}
                 </h2>
                 <p className="text-zinc-500 text-sm mt-0.5">
                   Extracted via <span className="text-amber-400 font-semibold">{transcriptMethod}</span>
@@ -635,7 +635,7 @@ export default function NewProjectPage() {
             <div className="mb-7">
               <div className="flex items-center justify-between mb-3">
                 <label className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.15em]">
-                  {mode === 'image' ? 'Image Analysis' : mode === 'pdf' ? 'Extracted Content' : 'Transcript'}
+                  {mode === 'pdf' ? 'Extracted Content' : 'Transcript'}
                 </label>
                 <span className="text-[10px] text-zinc-700 tabular-nums">{transcript.split(' ').length} words</span>
               </div>
