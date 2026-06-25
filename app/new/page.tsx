@@ -110,6 +110,13 @@ export default function NewProjectPage() {
   const [isDragging, setIsDragging] = useState(false)
   const [isAudioDragging, setIsAudioDragging] = useState(false)
   const [intent, setIntent] = useState<string>('')
+  const [imageAnalysis, setImageAnalysis] = useState<Record<string, unknown>>({})
+  const [imageBase64, setImageBase64] = useState<string>('')
+  const [imageMediaType, setImageMediaType] = useState<string>('')
+  const [customBrief, setCustomBrief] = useState('')
+  const [posterUrl, setPosterUrl] = useState('')
+  const [posterPrompt, setPosterPrompt] = useState('')
+  const [generatingPoster, setGeneratingPoster] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -219,6 +226,9 @@ export default function NewProjectPage() {
 
       setTranscript(data.description)
       setTranscriptMethod('Claude Vision')
+      setImageAnalysis(data.analysis ?? {})
+      setImageBase64(data.base64 ?? '')
+      setImageMediaType(data.mediaType ?? 'image/jpeg')
       setPhase('transcript-ready')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Image analysis failed')
@@ -281,6 +291,34 @@ export default function NewProjectPage() {
     if (mode === 'video-file') return handleFileUpload()
     if (mode === 'image') return handleImageAnalyse()
     if (mode === 'pdf') return handleFileUpload()
+  }
+
+  // Step 2a — Poster recreation (image mode)
+  async function handlePosterRecreate() {
+    if (!imageBase64 || !intent) return
+    setError('')
+    setGeneratingPoster(true)
+    try {
+      const res = await fetch('/api/poster-recreate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          base64: imageBase64,
+          mediaType: imageMediaType,
+          analysis: imageAnalysis,
+          intent,
+          userBrief: intent === 'custom-brief' ? customBrief : '',
+        }),
+      })
+      const data = await res.json() as { imageUrl?: string; prompt?: string; error?: string }
+      if (!res.ok || !data.imageUrl) throw new Error(data.error ?? 'Failed to recreate poster')
+      setPosterUrl(data.imageUrl)
+      setPosterPrompt(data.prompt ?? '')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Poster recreation failed')
+    } finally {
+      setGeneratingPoster(false)
+    }
   }
 
   // Step 2 — Generate scripts
@@ -465,8 +503,106 @@ export default function NewProjectPage() {
           </div>
         )}
 
+        {/* ───── POSTER RECREATE STATE (image mode) ───── */}
+        {phase === 'transcript-ready' && mode === 'image' && (
+          <div className="animate-slide-up">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-9 h-9 bg-emerald-500/15 border border-emerald-500/20 rounded-xl flex items-center justify-center shrink-0">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#34d399" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Image Analysed</h2>
+                <p className="text-zinc-500 text-sm mt-0.5">What do you want to do with this poster?</p>
+              </div>
+            </div>
+
+            {/* Analysis summary */}
+            {imageAnalysis.summary && (
+              <div className="mb-6 p-4 rounded-xl border border-white/[0.07] bg-white/[0.02]">
+                <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wider font-bold">Poster Analysis</p>
+                <p className="text-sm text-zinc-300 leading-relaxed">{String(imageAnalysis.summary ?? '')}</p>
+              </div>
+            )}
+
+            {/* Intent cards */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {[
+                { id: 'same-poster', label: '🖼️ Same Poster', desc: 'Recreate exact same layout & design with your photo enhanced' },
+                { id: 'custom-brief', label: '✏️ Custom Brief', desc: 'Tell me what to change — text, colors, layout' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => { setIntent(opt.id); setPosterUrl(''); setError('') }}
+                  className={`p-4 rounded-xl border text-left transition-all ${intent === opt.id ? 'border-amber-500/60 bg-amber-500/10' : 'border-white/[0.07] bg-white/[0.02] hover:border-white/20'}`}
+                >
+                  <p className="text-sm font-semibold text-white">{opt.label}</p>
+                  <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{opt.desc}</p>
+                </button>
+              ))}
+            </div>
+
+            {/* Custom brief input */}
+            {intent === 'custom-brief' && (
+              <div className="mb-5">
+                <textarea
+                  value={customBrief}
+                  onChange={(e) => setCustomBrief(e.target.value)}
+                  placeholder="E.g. Change the background to dark blue, keep my photo, add text 'Sale 50% Off' at the top in bold white..."
+                  rows={4}
+                  className="w-full bg-white/[0.025] border border-white/[0.07] rounded-xl px-4 py-3 text-zinc-300 text-sm leading-6 focus:outline-none focus:border-amber-500/40 resize-none"
+                />
+              </div>
+            )}
+
+            {/* Generated poster result */}
+            {posterUrl && (
+              <div className="mb-5">
+                <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-3">Generated Poster</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={posterUrl} alt="Recreated poster" className="w-full rounded-xl border border-white/[0.07]" />
+                <div className="flex gap-2 mt-3">
+                  <a href={posterUrl} download="poster.jpg" className="btn-primary text-sm px-4 py-2 rounded-xl">↓ Download</a>
+                  <button onClick={() => { setPosterUrl(''); setIntent('') }} className="btn-ghost text-sm px-4 py-2 rounded-xl">Try Again</button>
+                </div>
+                {posterPrompt && (
+                  <p className="text-xs text-zinc-600 mt-2 leading-relaxed">{posterPrompt}</p>
+                )}
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-4 flex items-start gap-3 bg-red-500/[0.08] border border-red-500/20 rounded-xl px-4 py-3">
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setPhase('input'); setIntent(''); setPosterUrl(''); setError(''); setCustomBrief('') }}
+                className="btn-ghost flex-1 text-zinc-400 font-medium py-3.5 rounded-xl text-sm"
+              >
+                ← Try Again
+              </button>
+              {!posterUrl && (
+                <button
+                  onClick={handlePosterRecreate}
+                  disabled={!intent || generatingPoster || (intent === 'custom-brief' && customBrief.trim().length < 10)}
+                  className="btn-primary flex-[2] text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  {generatingPoster ? (
+                    <span className="flex items-center gap-2 justify-center">
+                      <div className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                      Recreating poster…
+                    </span>
+                  ) : intent === 'same-poster' ? '🖼️ Recreate Same Poster →' : intent === 'custom-brief' ? '✏️ Generate Custom Poster →' : 'Select an option above'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ───── TRANSCRIPT READY STATE ───── */}
-        {phase === 'transcript-ready' && (
+        {phase === 'transcript-ready' && mode !== 'image' && (
           <div className="animate-slide-up">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-9 h-9 bg-emerald-500/15 border border-emerald-500/20 rounded-xl flex items-center justify-center shrink-0">

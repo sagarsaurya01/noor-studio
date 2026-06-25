@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1500,
-      system: 'You are a content analyst. Analyze this image and describe what you see in detail — products, people, text, colors, context, mood. Write a detailed description that can be used to create a social media video script about this image.',
+      system: 'You are a poster/graphic design analyst. Analyze the image and return a JSON object describing it for recreation purposes.',
       messages: [
         {
           role: 'user',
@@ -40,15 +40,30 @@ export async function POST(req: NextRequest) {
             },
             {
               type: 'text',
-              text: 'Describe this image in detail for content creation purposes.',
+              text: `Analyze this image/poster and return ONLY this JSON (no markdown):
+{
+  "hasPerson": true/false,
+  "layout": "describe the layout — where is the person, text, background",
+  "colors": "main colors used",
+  "textContent": "all text visible in the image",
+  "style": "design style — modern, minimal, bold, etc.",
+  "mood": "mood/vibe of the poster",
+  "summary": "2-3 sentence plain English description of what this poster is"
+}`,
             },
           ],
         },
       ],
     })
 
-    const description = message.content[0].type === 'text' ? message.content[0].text : ''
-    return NextResponse.json({ description, method: 'claude-vision' })
+    const raw = message.content[0].type === 'text' ? message.content[0].text : '{}'
+    let analysis: Record<string, unknown> = {}
+    try {
+      const match = raw.match(/\{[\s\S]*\}/)
+      analysis = match ? JSON.parse(match[0]) : {}
+    } catch { analysis = {} }
+
+    return NextResponse.json({ description: raw, analysis, method: 'claude-vision', base64, mediaType })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Image analysis failed'
     return NextResponse.json({ error: message }, { status: 500 })
