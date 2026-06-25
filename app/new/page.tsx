@@ -109,6 +109,7 @@ export default function NewProjectPage() {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isAudioDragging, setIsAudioDragging] = useState(false)
+  const [intent, setIntent] = useState<string>('')
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -293,7 +294,7 @@ export default function NewProjectPage() {
       const body =
         inputMode === 'topic'
           ? { mode: 'topic', topic, platform, format_type: formatType, input_type: 'topic' }
-          : { mode: 'video', transcript, videoUrl, platform, format_type: formatType, input_type: inputMode }
+          : { mode: 'video', transcript, videoUrl, platform, format_type: formatType, input_type: inputMode, angle_hint: intent }
 
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -522,16 +523,61 @@ export default function NewProjectPage() {
               </div>
             )}
 
+            {/* Intent selection */}
+            <div className="mb-6">
+              <p className="text-xs font-bold text-zinc-500 uppercase tracking-[0.15em] mb-3">What do you want to do with this?</p>
+              <div className={`grid gap-2 ${formatType === 'landscape' ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                {formatType === 'vertical' ? (
+                  <>
+                    {[
+                      { id: 'better-hook', label: '🎯 Better Hook', desc: 'Same vibe, stronger opening' },
+                      { id: 'translate', label: '🌐 Translate & Rewrite', desc: 'Change language or style' },
+                      { id: 'fresh-angle', label: '✨ Fresh Script', desc: 'New angle, same topic' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => setIntent(opt.id)}
+                        className={`p-3 rounded-xl border text-left transition-all ${intent === opt.id ? 'border-amber-500/60 bg-amber-500/10' : 'border-white/[0.07] bg-white/[0.02] hover:border-white/20'}`}
+                      >
+                        <p className="text-sm font-semibold text-white">{opt.label}</p>
+                        <p className="text-[10px] text-zinc-500 mt-0.5">{opt.desc}</p>
+                      </button>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {[
+                      { id: 'better-hook', label: '🎯 Better Hook', desc: 'Stronger opening' },
+                      { id: 'translate', label: '🌐 Translate', desc: 'Change language' },
+                      { id: 'fresh-angle', label: '✨ Fresh Angle', desc: 'New perspective' },
+                      { id: 'short-reel', label: '✂️ Make it Short', desc: 'Condense to a reel' },
+                      { id: 'same-script', label: '📝 Same Script', desc: 'Better language' },
+                      { id: 'key-points', label: '📌 Key Points', desc: 'Extract highlights' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => setIntent(opt.id)}
+                        className={`p-3 rounded-xl border text-left transition-all ${intent === opt.id ? 'border-amber-500/60 bg-amber-500/10' : 'border-white/[0.07] bg-white/[0.02] hover:border-white/20'}`}
+                      >
+                        <p className="text-sm font-semibold text-white">{opt.label}</p>
+                        <p className="text-[10px] text-zinc-500 mt-0.5">{opt.desc}</p>
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            </div>
+
             <div className="flex gap-3">
               <button
-                onClick={() => { setPhase('input'); setTranscript(''); setError('') }}
+                onClick={() => { setPhase('input'); setTranscript(''); setError(''); setIntent('') }}
                 className="btn-ghost flex-1 text-zinc-400 font-medium py-3.5 rounded-xl text-sm"
               >
                 ← Try Again
               </button>
               <button
                 onClick={() => handleGenerate(mode)}
-                disabled={transcript.trim().length < 20}
+                disabled={transcript.trim().length < 20 || !intent}
                 className="btn-primary flex-[2] text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none"
               >
                 Generate Script &amp; Storyboard →

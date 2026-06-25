@@ -33,9 +33,20 @@ async function generateBriefAndScripts(
     ? (platform ? (LANDSCAPE_PLATFORM_INSTRUCTIONS[platform] || '') : LANDSCAPE_PLATFORM_INSTRUCTIONS['YouTube (Long-form)'])
     : (platform ? (PLATFORM_INSTRUCTIONS[platform] || '') : PLATFORM_INSTRUCTIONS['Instagram Reels'])
 
+  const INTENT_INSTRUCTIONS: Record<string, string> = {
+    'better-hook': 'Keep the same content and message but rewrite with a much stronger, attention-grabbing opening hook.',
+    'translate': 'Translate the content to English if it is in another language, then rewrite in a clean engaging style.',
+    'fresh-angle': 'Use this transcript as inspiration only. Create 3 completely fresh scripts with a new angle and perspective on the same topic.',
+    'short-reel': 'Condense this into a punchy short-form reel script under 60 seconds. Extract the single most valuable insight.',
+    'same-script': 'Keep the same script structure and points but rewrite with better, more engaging language and flow.',
+    'key-points': 'Extract the top 5 key insights from this transcript and build scripts around them.',
+  }
+
+  const intentInstruction = angle_hint && INTENT_INSTRUCTIONS[angle_hint] ? INTENT_INSTRUCTIONS[angle_hint] : ''
+
   let userPrompt = inputType === 'topic'
     ? `Create a content brief and 3 script variations for this topic: "${input}"`
-    : `Analyse this transcript and create a content brief and 3 NEW script variations (fresh angle, not a copy):\n\n${input}`
+    : `Analyse this transcript and create a content brief and 3 NEW script variations.\n${intentInstruction}\n\nTranscript:\n\n${input}`
 
   if (tone_override || angle_hint) {
     const extras: string[] = []
