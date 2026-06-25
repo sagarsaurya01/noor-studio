@@ -117,7 +117,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { mode, topic, transcript, videoUrl, platform, tone_override, angle_hint, project_id, format_type, input_type } = body
 
-    const input = mode === 'topic' ? topic : transcript
+    // Truncate transcript to ~4000 words to avoid Claude JSON cutoff on long videos
+    const rawInput = mode === 'topic' ? topic : transcript
+    const input = rawInput && mode !== 'topic'
+      ? rawInput.split(' ').slice(0, 4000).join(' ')
+      : rawInput
     if (!input) return NextResponse.json({ error: 'No input provided' }, { status: 400 })
 
     const isLandscape = format_type === 'landscape'
