@@ -517,10 +517,10 @@ export default function NewProjectPage() {
             </div>
 
             {/* Analysis summary */}
-            {imageAnalysis.summary && (
+            {!!imageAnalysis.summary && (
               <div className="mb-6 p-4 rounded-xl border border-white/[0.07] bg-white/[0.02]">
                 <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wider font-bold">Poster Analysis</p>
-                <p className="text-sm text-zinc-300 leading-relaxed">{String(imageAnalysis.summary ?? '')}</p>
+                <p className="text-sm text-zinc-300 leading-relaxed">{String(imageAnalysis.summary)}</p>
               </div>
             )}
 
