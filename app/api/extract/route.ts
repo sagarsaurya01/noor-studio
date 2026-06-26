@@ -7,15 +7,18 @@ import fs from 'fs'
 
 export const dynamic = 'force-dynamic'
 
-
 const execAsync = promisify(exec)
 
-// GET — return already-extracted files for a project (so page can reload them)
+function getProjectDir(projectId: string) {
+  return path.join(os.tmpdir(), 'noor_extracted', projectId)
+}
+
+// GET — return already-extracted files for a project
 export async function GET(req: NextRequest) {
   const projectId = req.nextUrl.searchParams.get('projectId')
   if (!projectId) return NextResponse.json({ error: 'Missing projectId' }, { status: 400 })
 
-  const outputDir = path.join(process.cwd(), 'public', 'extracted', projectId)
+  const outputDir = getProjectDir(projectId)
   const framesDir = path.join(outputDir, 'frames')
   const clipsDir  = path.join(outputDir, 'clips')
 
@@ -25,12 +28,12 @@ export async function GET(req: NextRequest) {
 
   const frames = fs.existsSync(framesDir)
     ? fs.readdirSync(framesDir).filter(f => f.endsWith('.jpg')).sort()
-        .map(f => `/extracted/${projectId}/frames/${f}`)
+        .map(f => `/api/files/${projectId}/frames/${f}`)
     : []
 
   const clips = fs.existsSync(clipsDir)
     ? fs.readdirSync(clipsDir).filter(f => f.endsWith('.mp4')).sort()
-        .map(c => `/extracted/${projectId}/clips/${c}`)
+        .map(c => `/api/files/${projectId}/clips/${c}`)
     : []
 
   return NextResponse.json({ frames, clips })
@@ -44,16 +47,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing videoUrl or projectId' }, { status: 400 })
     }
 
-    // --- 1. Create output dirs inside public/ so Next.js serves them statically ---
-    const outputDir = path.join(process.cwd(), 'public', 'extracted', projectId)
+    const outputDir = getProjectDir(projectId)
     const framesDir = path.join(outputDir, 'frames')
     const clipsDir  = path.join(outputDir, 'clips')
     fs.mkdirSync(framesDir, { recursive: true })
     fs.mkdirSync(clipsDir,  { recursive: true })
 
-    // --- 2. Download the video (720p max to keep size reasonable) ---
-    const tempDir       = os.tmpdir()
-    const videoBase     = path.join(tempDir, `noor_video_${Date.now()}`)
+    // Download video to tmpdir
+    const videoBase     = path.join(os.tmpdir(), `noor_video_${Date.now()}`)
     const videoTemplate = `${videoBase}.%(ext)s`
 
     await execAsync(
@@ -61,26 +62,32 @@ export async function POST(req: NextRequest) {
       { timeout: 300000 }
     )
 
-    // Find the downloaded file (pick newest noor_video_ mp4)
-    const videoFiles = fs.readdirSync(tempDir)
-      .filter(f => f.startsWith('noor_video_') && f.endsWith('.mp4'))
-      .map(f => ({ name: f, mtime: fs.statSync(path.join(tempDir, f)).mtimeMs }))
+    const videoFiles = fs.readdirSync(os.tmpdir())
+      .filter(f => f.startsWith(`noor_video_${path.basename(videoBase).split('_')[2]}`) && f.endsWith('.mp4'))
+      .map(f => ({ name: f, mtime: fs.statSync(path.join(os.tmpdir(), f)).mtimeMs }))
       .sort((a, b) => b.mtime - a.mtime)
 
-    if (videoFiles.length === 0) {
+    // fallback: pick any newest noor_video_ mp4
+    const allVideoFiles = fs.readdirSync(os.tmpdir())
+      .filter(f => f.startsWith('noor_video_') && f.endsWith('.mp4'))
+      .map(f => ({ name: f, mtime: fs.statSync(path.join(os.tmpdir(), f)).mtimeMs }))
+      .sort((a, b) => b.mtime - a.mtime)
+
+    const picked = videoFiles.length > 0 ? videoFiles : allVideoFiles
+    if (picked.length === 0) {
       return NextResponse.json({ error: 'Could not download video' }, { status: 500 })
     }
 
-    const videoPath = path.join(tempDir, videoFiles[0].name)
+    const videoPath = path.join(os.tmpdir(), picked[0].name)
 
-    // --- 3. Extract frames — 1 every 5 seconds, scaled to 640px wide ---
+    // Extract frames — 1 every 5 seconds
     const framePattern = path.join(framesDir, 'frame_%04d.jpg')
     await execAsync(
       `ffmpeg -i "${videoPath}" -vf "fps=1/5,scale=640:-2" -q:v 3 -y "${framePattern}"`,
       { timeout: 120000 }
     )
 
-    // --- 4. Get video duration (ffprobe ships with ffmpeg) ---
+    // Get duration
     let duration = 0
     try {
       const { stdout } = await execAsync(
@@ -88,39 +95,34 @@ export async function POST(req: NextRequest) {
         { timeout: 10000 }
       )
       duration = parseFloat(stdout.trim()) || 0
-    } catch { /* ignore — clips just won't be extracted */ }
+    } catch { /* ignore */ }
 
-    // --- 5. Extract 5-second B-roll clips every 30 seconds ---
+    // Extract 5-second clips every 30 seconds
     if (duration > 0) {
-      const clipLength   = 5
-      const clipInterval = 30
       const clipJobs: Promise<unknown>[] = []
-
-      for (let start = 0; start + clipLength <= duration; start += clipInterval) {
+      for (let start = 0; start + 5 <= duration; start += 30) {
         const label    = String(Math.floor(start)).padStart(4, '0')
         const clipPath = path.join(clipsDir, `clip_${label}s.mp4`)
         clipJobs.push(
           execAsync(
-            `ffmpeg -ss ${start} -i "${videoPath}" -t ${clipLength} -c:v libx264 -preset ultrafast -crf 28 -c:a aac -y "${clipPath}"`,
+            `ffmpeg -ss ${start} -i "${videoPath}" -t 5 -c:v libx264 -preset ultrafast -crf 28 -c:a aac -y "${clipPath}"`,
             { timeout: 60000 }
-          ).catch(() => null) // one clip failing shouldn't abort the whole job
+          ).catch(() => null)
         )
       }
       await Promise.all(clipJobs)
     }
 
-    // --- 6. Clean up the big video file ---
     try { fs.unlinkSync(videoPath) } catch { /* best-effort */ }
 
-    // --- 7. Return paths (served as /extracted/... by Next.js static layer) ---
     const frames = fs.existsSync(framesDir)
       ? fs.readdirSync(framesDir).filter(f => f.endsWith('.jpg')).sort()
-          .map(f => `/extracted/${projectId}/frames/${f}`)
+          .map(f => `/api/files/${projectId}/frames/${f}`)
       : []
 
     const clips = fs.existsSync(clipsDir)
       ? fs.readdirSync(clipsDir).filter(f => f.endsWith('.mp4')).sort()
-          .map(c => `/extracted/${projectId}/clips/${c}`)
+          .map(c => `/api/files/${projectId}/clips/${c}`)
       : []
 
     return NextResponse.json({ frames, clips })
