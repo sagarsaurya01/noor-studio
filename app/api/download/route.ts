@@ -20,7 +20,9 @@ async function fetchSupadata(videoId: string, lang?: string): Promise<string | n
   const url = `https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=true${lang ? `&lang=${lang}` : ''}`
   const res = await fetch(url, { headers: { 'x-api-key': process.env.SUPADATA_API_KEY ?? '' } })
   if (!res.ok) return null
-  const data = await res.json() as { content?: string }
+  const raw = await res.text()
+  let data: { content?: string }
+  try { data = JSON.parse(raw) } catch { return null }
   const text = data.content ?? ''
   return text.length > 50 ? text : null
 }
