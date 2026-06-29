@@ -275,6 +275,7 @@ export default function NewProjectPage() {
       const res = await fetch('/api/whisper', { method: 'POST', body: formData })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
+      if (!data.transcript || data.transcript.trim().length < 5) throw new Error('Could not transcribe audio. Please speak clearly and try again.')
       setTranscript(data.transcript)
       setTranscriptMethod('Whisper AI')
       setPhase('transcript-ready')

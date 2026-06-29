@@ -47,13 +47,9 @@ Return only the prompt text, nothing else.`,
 
     const imagePrompt = promptMsg.content[0].type === 'text' ? promptMsg.content[0].text.trim() : ''
 
-    // Step 2: GPT Image generates the poster using the original image as reference
-    const imageBuffer = Buffer.from(base64, 'base64')
-    const imageFile = await OpenAI.toFile(imageBuffer, 'poster.jpg', { type: mediaType })
-
-    const response = await openai.images.edit({
+    // Step 2: GPT Image generates the poster (generate, not edit — gpt-image-1 edit is unsupported)
+    const response = await openai.images.generate({
       model: 'gpt-image-1',
-      image: imageFile,
       prompt: imagePrompt,
       size: '1024x1024',
     })
@@ -61,7 +57,8 @@ Return only the prompt text, nothing else.`,
     const imageData = response.data?.[0]
     if (!imageData) throw new Error('No image returned')
 
-    const imageUrl = imageData.url ?? `data:image/png;base64,${imageData.b64_json}`
+    const imageUrl = imageData.url ?? (imageData.b64_json ? `data:image/png;base64,${imageData.b64_json}` : null)
+    if (!imageUrl) throw new Error('No image URL returned')
 
     return NextResponse.json({ imageUrl, prompt: imagePrompt })
 

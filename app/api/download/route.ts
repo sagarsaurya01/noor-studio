@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      error: 'This video has no captions. Please upload the audio file using the "Voice Note" upload option instead.',
+      error: 'This video has no captions available. Try: (1) Use a different YouTube video that has captions, or (2) Download the video and upload it using the "Video File" option.',
     }, { status: 422 })
 
   } catch (err: unknown) {
